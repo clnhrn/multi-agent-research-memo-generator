@@ -1,4 +1,13 @@
+# Secrets (keep .env.example tracked)
 .env
+!.env.example
+
+# Environments and caches
 .venv/
-extra/
 __pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Private notes
+extra/
