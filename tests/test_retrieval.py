@@ -47,6 +47,12 @@ def test_lowercase_query_still_finds_the_company():
     assert sources[:2] == ["P06", "P05"]
 
 
+def test_name_at_start_of_query_still_counts_as_a_name():
+    """Researcher sub-queries start with the subject; 'volumes' must not pull in P07."""
+    sources = {r["source"] for r in mcp_server.search_corpus("CareBridge consultation volumes")}
+    assert sources == {"P09", "P10"}
+
+
 def test_irrelevant_query_returns_nothing():
     assert mcp_server.search_corpus("quantum computing") == []
 

@@ -23,7 +23,9 @@ _STOPWORDS = frozenset(
     "a an and as assess at by for from in is its of on the than to trend trends with".split()
 )
 _WORD = re.compile(r"[a-z0-9]+")
-_NAME = re.compile(r"(?<!^)\b[A-Z][a-zA-Z]+")  # capitalised, not the first word
+# Capitalised words, anywhere in the query. Stopwords such as a leading "Assess"
+# never reach scoring, so they cannot be mistaken for names.
+_NAME = re.compile(r"\b[A-Z][a-zA-Z]+")
 
 server = FastMCP("Week 18 fictional market corpus")
 
