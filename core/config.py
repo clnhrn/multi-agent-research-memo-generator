@@ -29,6 +29,7 @@ MAX_TURNS = 8  # supervisor turns per topic (R1)
 MAX_REJECTIONS = 3  # reviewer rejections before escalating to a human
 MIN_WORDS, MAX_WORDS = 250, 350  # memo body length
 MIN_SNIPPETS, MAX_SNIPPETS = 3, 5  # researcher output
+MAX_SUBQUERIES = 2  # extra MCP searches when the first one finds < MIN_SNIPPETS
 COMPACTION_TOKENS = int(os.getenv("COMPACTION_TOKENS", "8000"))  # R5 trigger
 
 # --- Model settings (identical for baseline and team) --------------------------

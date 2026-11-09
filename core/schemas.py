@@ -14,7 +14,7 @@ from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from core.config import MAX_SNIPPETS
+from core.config import MAX_SNIPPETS, MAX_SUBQUERIES
 from core.text import SOURCE_ID
 
 
@@ -44,10 +44,40 @@ class ResearchResult(BaseModel):
         return snippets
 
 
+class SubQueries(BaseModel):
+    """The Researcher's plan for extra MCP searches."""
+
+    queries: list[str] = Field(description="Short keyword queries, each naming the subject")
+
+    @field_validator("queries")
+    @classmethod
+    def _cap(cls, queries: list[str]) -> list[str]:
+        return [q.strip() for q in queries if q.strip()][:MAX_SUBQUERIES]
+
+
 class Memo(BaseModel):
     title: str
     body: str = Field(description="Plain prose with inline citations like [P01]")
     footnotes: list[str] = Field(description='One per cited ID, e.g. "[P01] Solar capacity"')
+
+
+ViolationKind = Literal[
+    "uncited_figure", "cause_or_motive", "prediction", "recommendation", "outside_claim"
+]
+
+
+class Violation(BaseModel):
+    """One rubric violation the Reviewer model proposes; code verifies it before it counts."""
+
+    kind: ViolationKind
+    quote: str = Field(description="The full offending sentence, copied exactly from the memo")
+    explanation: str
+
+
+class ReviewFindings(BaseModel):
+    """The Reviewer model's raw output. The Verdict is computed from it in code."""
+
+    violations: list[Violation] = Field(description="Empty if the memo has no violations")
 
 
 class Verdict(BaseModel):
