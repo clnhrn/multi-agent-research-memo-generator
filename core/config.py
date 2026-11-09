@@ -4,9 +4,12 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+
+if TYPE_CHECKING:  # imported lazily so the MCP server process stays light
+    from langchain_openai import ChatOpenAI
 
 # Variables already set in the shell (e.g. by Vocareum) win over .env.
 load_dotenv(override=False)
@@ -17,6 +20,7 @@ DATA_DIR = ROOT / "data"
 CORPUS_CSV = DATA_DIR / "corpus.csv"
 GLOSSARY_MD = DATA_DIR / "glossary.md"
 MARKET_CORPUS_MD = DATA_DIR / "market_corpus.md"
+MCP_SERVER_SCRIPT = ROOT / "mcp_server.py"
 SCRATCHPAD_DIR = ROOT / "scratchpad"
 LOG_DIR = ROOT / "logs"
 
@@ -58,8 +62,10 @@ def get_settings() -> Settings:
 
 
 @lru_cache(maxsize=1)
-def make_llm() -> ChatOpenAI:
+def make_llm() -> "ChatOpenAI":
     """The only place a chat model is constructed."""
+    from langchain_openai import ChatOpenAI
+
     settings = get_settings()
     return ChatOpenAI(
         model=settings.model,
