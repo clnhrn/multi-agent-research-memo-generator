@@ -167,9 +167,7 @@ starlette==1.10.0
 tenacity==9.2.1
     # via langchain-core
 tiktoken==0.14.0
-    # via
-    #   langchain-openai
-    #   research-memo-team
+    # via langchain-openai
 truststore==0.10.5 ; sys_platform != 'emscripten'
     # via
     #   httpcore2
