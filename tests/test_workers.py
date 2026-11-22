@@ -11,27 +11,6 @@ SOLAR = [
 ]
 
 
-@pytest.fixture
-def fake_call(monkeypatch):
-    """Replace the model call; records (role, user prompt) and returns a fixed output."""
-
-    def install(output):
-        def _call(state, role, system, user, *, schema=None, tools=None):
-            _call.calls.append((role, user))
-            update = {
-                "total_tokens": state["total_tokens"] + 10,
-                "messages": [],
-                "trace": [{"kind": "llm_call", "data": {"role": role}}],
-            }
-            return output, update
-
-        _call.calls = []
-        monkeypatch.setattr(team, "call", _call)
-        return _call
-
-    return install
-
-
 def _memo(words=260, cite="P01", footnotes=("[P01] Solar capacity",)):
     return Memo(title="Solar", body="word " * words + f"[{cite}].", footnotes=list(footnotes))
 
