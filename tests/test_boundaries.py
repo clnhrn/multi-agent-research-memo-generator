@@ -49,7 +49,7 @@ def _used_in(function: str) -> set[str]:
 MCP_NAMES = {"mcp_session", "search", "_research"}
 
 
-@pytest.mark.parametrize("role", ["supervisor", "writer", "reviewer"])
+@pytest.mark.parametrize("role", ["supervisor", "writer", "fix_length", "reviewer"])
 def test_only_the_researcher_touches_mcp(role):
     """R2: crossing role boundaries (e.g. the writer calling MCP) is a fail."""
     assert not MCP_NAMES & _used_in(role)
