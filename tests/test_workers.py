@@ -3,7 +3,9 @@
 import pytest
 
 import team
+from core.config import MAX_WORDS, MIN_WORDS
 from core.schemas import Memo, ReviewFindings, SubQueries, Violation, new_state
+from core.text import body_word_count
 
 SOLAR = [
     {"text": "Northstar installed 120 MW of rooftop solar in 2025.", "source": "P01"},
@@ -78,6 +80,49 @@ def test_writer_revision_sees_previous_draft_and_reasons(fake_call):
     _, prompt = llm.calls[0]
     assert "Previous draft" in prompt and "Body is too short." in prompt
     assert update["trace"][-1]["data"]["revision"] is True
+
+
+def _writes(fake_call, *words):
+    """Make the writer produce drafts of these lengths in turn; returns the fake and update."""
+    drafts = iter([_memo(words=n) for n in words])
+    llm = fake_call(lambda state, role: next(drafts))
+    state = {**new_state("solar topic", "T01"), "snippets": SOLAR}
+    return llm, team.writer(state).update
+
+
+def _body_words(update):
+    return body_word_count(update["draft_memo"]["body"])
+
+
+@pytest.mark.parametrize("words", [MIN_WORDS, MAX_WORDS])
+def test_writer_leaves_a_draft_in_range_alone(fake_call, words):
+    llm, update = _writes(fake_call, words)
+    assert _body_words(update) == words
+    assert len(llm.calls) == 1
+    assert "length_fix" not in _kinds(update)
+
+
+@pytest.mark.parametrize(
+    ("draft", "action"), [(MIN_WORDS - 1, "Add two or three"), (MAX_WORDS + 1, "Cut about")]
+)
+def test_writer_fixes_its_own_length_before_handing_over(fake_call, draft, action):
+    llm, update = _writes(fake_call, draft, 300)
+    assert _body_words(update) == 300
+    prompt = llm.calls[1][1]
+    assert f"body is {draft} words" in prompt and action in prompt
+    assert SOLAR[0]["text"] in prompt  # the evidence is still available
+    event = update["trace"][-2]
+    assert event["data"] == {"before": draft, "after": 300, "kept": True}
+    # Both calls are counted and logged.
+    assert update["total_tokens"] == 20 and len(update["messages"]) == 2
+    assert _kinds(update) == ["llm_call", "llm_call", "length_fix", "draft"]
+
+
+def test_writer_tries_once_and_keeps_its_draft_if_the_fix_fails(fake_call):
+    llm, update = _writes(fake_call, 240, 245)
+    assert _body_words(update) == 240
+    assert len(llm.calls) == 2
+    assert update["trace"][-2]["data"]["kept"] is False
 
 
 # --- Reviewer ---------------------------------------------------------------------
