@@ -1,14 +1,14 @@
 """Supervisor routing, hard stops and guards; the model is faked, the graph is real."""
 
 import pytest
-from langchain_core.messages import AIMessage
+from helpers import TOPIC, pick, route, scripted
 from langgraph.graph import END
 from langgraph.types import Command
 
 import team
 from core.config import MAX_REJECTIONS, MAX_TURNS
 from core.prompts import supervisor_request
-from core.schemas import Memo, ReviewFindings, SubQueries, Violation, new_state
+from core.schemas import new_state
 
 SNIPPETS = [{"text": "Northstar installed 120 MW.", "source": "P01"}]
 MEMO = {"title": "T", "body": "Secret body [P01].", "footnotes": ["[P01] a"]}
@@ -18,13 +18,6 @@ REVISE = {"decision": "revise", "reasons": ["Too short."]}
 
 def _state(**fields):
     return {**new_state("solar topic", "T01"), **fields}
-
-
-def _pick(*roles):
-    calls = [
-        {"name": f"hand_off_to_{role}", "args": {}, "id": str(i)} for i, role in enumerate(roles)
-    ]
-    return AIMessage("", tool_calls=calls)
 
 
 # --- Tools and prompt -------------------------------------------------------------
@@ -71,7 +64,7 @@ def test_supervisor_sees_progress_but_no_evidence_or_memo_text():
     ],
 )  # fmt: skip
 def test_hard_stops_end_the_run_without_a_model_call(fake_call, fields, status):
-    llm = fake_call(_pick("researcher"))
+    llm = fake_call(pick("researcher"))
 
     command = team.supervisor(_state(**fields))
 
@@ -98,20 +91,20 @@ DRAFTED = {"snippets": SNIPPETS, "draft_memo": MEMO}
 @pytest.mark.parametrize(
     ("fields", "reply", "goto", "redirected"),
     [
-        ({}, _pick("researcher"), "researcher", False),
-        ({"snippets": SNIPPETS}, _pick("writer"), "writer", False),
-        (DRAFTED, _pick("reviewer"), "reviewer", False),
-        ({**DRAFTED, "review_verdict": REVISE}, _pick("writer"), "writer", False),
+        ({}, pick("researcher"), "researcher", False),
+        ({"snippets": SNIPPETS}, pick("writer"), "writer", False),
+        (DRAFTED, pick("reviewer"), "reviewer", False),
+        ({**DRAFTED, "review_verdict": REVISE}, pick("writer"), "writer", False),
         # Wasteful but possible: the model's choice stands and costs a turn.
-        (DRAFTED, _pick("researcher"), "researcher", False),
+        (DRAFTED, pick("researcher"), "researcher", False),
         # Impossible or malformed: redirected.
-        ({}, _pick("writer"), "researcher", True),
-        ({}, _pick("reviewer"), "researcher", True),
-        ({"snippets": SNIPPETS}, _pick("reviewer"), "writer", True),
-        ({**DRAFTED, "review_verdict": REVISE}, _pick("reviewer"), "writer", True),
-        (DRAFTED, _pick("writer", "reviewer"), "reviewer", True),
-        (DRAFTED, _pick(), "reviewer", True),
-        ({}, _pick("intern"), "researcher", True),
+        ({}, pick("writer"), "researcher", True),
+        ({}, pick("reviewer"), "researcher", True),
+        ({"snippets": SNIPPETS}, pick("reviewer"), "writer", True),
+        ({**DRAFTED, "review_verdict": REVISE}, pick("reviewer"), "writer", True),
+        (DRAFTED, pick("writer", "reviewer"), "reviewer", True),
+        (DRAFTED, pick(), "reviewer", True),
+        ({}, pick("intern"), "researcher", True),
     ],
 )
 def test_handoff_follows_the_model_unless_it_is_impossible(
@@ -132,49 +125,21 @@ def test_handoff_follows_the_model_unless_it_is_impossible(
 # --- Whole graph ------------------------------------------------------------------
 
 
-GOOD = Memo(title="T", body="word " * 260 + "[P01].", footnotes=["[P01] Solar"])
-CLAIM = "Demand will surely rise."
-BAD = GOOD.model_copy(update={"body": f"{GOOD.body} {CLAIM}"})
-FINDING = Violation(kind="prediction", quote=CLAIM, explanation="unsupported")
-
-
-def _run(fake_call, *, rejections=0, pick=None):
-    """Run the real graph and MCP server; the reviewer rejects the first `rejections` drafts."""
-
-    def reply(state, role):
-        if role == "supervisor":
-            return pick(state) if pick else _pick(team.fallback_handoff(state).invoke({}).goto)
-        if role == "researcher":
-            return SubQueries(queries=["Northstar solar prices"])
-        rejecting = state["rejections"] < rejections
-        if role == "writer":
-            return BAD if rejecting else GOOD
-        return ReviewFindings(violations=[FINDING] if rejecting else [])
-
-    fake_call(reply)
-    return team.build_graph().invoke(
-        new_state("Assess rooftop solar installation trends in Northstar.", "T01")
-    )
-
-
-def _route(final):
-    return [
-        e["data"]["handoff"].removeprefix("hand_off_to_")
-        for e in final["trace"]
-        if e["kind"] == "supervisor_decision"
-    ]
+def _run(fake_call, **script):
+    fake_call(scripted(**script))
+    return team.build_graph().invoke(new_state(TOPIC, "T01"))
 
 
 def test_graph_accepts_first_draft(fake_call):
     final = _run(fake_call)
-    assert _route(final) == ["researcher", "writer", "reviewer"]
+    assert route(final) == ["researcher", "writer", "reviewer"]
     assert (final["status"], final["turn_count"], final["rejections"]) == ("completed", 3, 0)
     assert final["mcp_calls"] >= 1
 
 
 def test_graph_revises_then_accepts(fake_call):
     final = _run(fake_call, rejections=2)
-    assert _route(final) == ["researcher"] + ["writer", "reviewer"] * 3
+    assert route(final) == ["researcher"] + ["writer", "reviewer"] * 3
     assert (final["status"], final["turn_count"], final["rejections"]) == ("completed", 7, 2)
 
 
@@ -186,7 +151,7 @@ def test_graph_escalates_after_three_rejections(fake_call):
 
 
 def test_graph_stops_at_the_turn_cap(fake_call):
-    final = _run(fake_call, pick=lambda state: _pick("researcher"))
+    final = _run(fake_call, choose=lambda state: pick("researcher"))
     assert (final["status"], final["turn_count"]) == ("max_turns", MAX_TURNS)
     assert final["trace"][-1]["kind"] == "stop"
 
@@ -197,5 +162,5 @@ def test_graph_escalates_when_nothing_is_found(fake_call, monkeypatch):
 
     monkeypatch.setattr(team, "search", nothing)
     final = _run(fake_call)
-    assert _route(final) == ["researcher"]
+    assert route(final) == ["researcher"]
     assert final["status"] == "escalated"
