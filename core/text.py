@@ -123,6 +123,11 @@ def best_sentence(body: str, quote: str) -> tuple[str | None, float]:
     return sentence, overlap
 
 
+def length_ok(body: str) -> bool:
+    """Return whether the memo body is within the required length range."""
+    return MIN_WORDS <= body_word_count(body) <= MAX_WORDS
+
+
 def check_memo(memo: Mapping) -> list[str]:
     """Run the deterministic rubric checks on the memo alone.
 
@@ -134,8 +139,8 @@ def check_memo(memo: Mapping) -> list[str]:
     """
     body = memo["body"]
     problems = []
-    words = body_word_count(body)
-    if not MIN_WORDS <= words <= MAX_WORDS:
+    if not length_ok(body):
+        words = body_word_count(body)
         problems.append(f"Body is {words} words; it must be {MIN_WORDS}-{MAX_WORDS}.")
     cited = set(extract_citations(body))
     if not cited:
