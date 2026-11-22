@@ -86,7 +86,9 @@ def call(
             raise result["parsing_error"]
         output, message = result["parsed"], result["raw"]
     elif tools:
-        output = message = llm.bind_tools(tools, tool_choice="required").invoke(prompt)
+        output = message = llm.bind_tools(
+            tools, tool_choice="required", parallel_tool_calls=False
+        ).invoke(prompt)
     else:
         output = message = llm.invoke(prompt)
 

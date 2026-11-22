@@ -2,8 +2,15 @@
 
 from collections.abc import Mapping, Sequence
 
-from core.config import MAX_SUBQUERIES, MAX_WORDS, MIN_SNIPPETS, MIN_WORDS
-from core.text import FOOTNOTES_HEADING
+from core.config import (
+    MAX_REJECTIONS,
+    MAX_SUBQUERIES,
+    MAX_TURNS,
+    MAX_WORDS,
+    MIN_SNIPPETS,
+    MIN_WORDS,
+)
+from core.text import FOOTNOTES_HEADING, body_word_count
 
 # Models can't count words reliably, so the length rule also gives a paragraph structure.
 _PARAGRAPHS = 4
@@ -99,6 +106,32 @@ def format_evidence(snippets: Sequence[Mapping]) -> str:
         The evidence block, or an empty string if there are no snippets.
     """
     return "\n".join(f"[{s['source']}] {s['text']}" for s in snippets)
+
+
+def supervisor_request(state: Mapping) -> str:
+    """Describe progress to the supervisor with source IDs and counts only.
+
+    Evidence and memo text are never included.
+
+    Args:
+        state: Current run state.
+
+    Returns:
+        The supervisor's user prompt.
+    """
+    sources = ", ".join(s["source"] for s in state["snippets"]) or "none"
+    memo, verdict = state["draft_memo"], state["review_verdict"]
+    draft = f"{body_word_count(memo['body'])} words" if memo else "none"
+    if memo is None:
+        review = "no draft to review"
+    else:
+        review = verdict["decision"] if verdict else "not reviewed yet"
+    return f"""Topic: {state["topic"]}
+Evidence: {sources}
+Draft: {draft}
+Last verdict: {review}
+Rejections: {state["rejections"]} of {MAX_REJECTIONS}
+Turn: {state["turn_count"]} of {MAX_TURNS}"""
 
 
 def researcher_request(topic: str, found: Sequence[Mapping]) -> str:
