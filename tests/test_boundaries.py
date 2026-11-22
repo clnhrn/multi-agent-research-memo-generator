@@ -49,7 +49,7 @@ def _used_in(function: str) -> set[str]:
 MCP_NAMES = {"mcp_session", "search", "_research"}
 
 
-@pytest.mark.parametrize("role", ["writer", "reviewer"])
+@pytest.mark.parametrize("role", ["supervisor", "writer", "reviewer"])
 def test_only_the_researcher_touches_mcp(role):
     """R2: crossing role boundaries (e.g. the writer calling MCP) is a fail."""
     assert not MCP_NAMES & _used_in(role)
@@ -58,6 +58,14 @@ def test_only_the_researcher_touches_mcp(role):
 def test_reviewer_reads_only_the_memo():
     """R2: the reviewer gets the writer's output and the static rubric, nothing else."""
     assert not {"snippets", "topic", "messages"} & _used_in("reviewer")
+
+
+def test_supervisor_never_calls_a_worker():
+    """R1: the supervisor dispatches through handoff tools, it never runs a worker."""
+    tree = ast.parse((ROOT / "team.py").read_text(encoding="utf-8"))
+    node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "supervisor")
+    names = {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
+    assert not {"researcher", "writer", "reviewer"} & names
 
 
 @pytest.mark.parametrize("role", ["researcher", "writer", "reviewer"])
