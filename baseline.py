@@ -13,6 +13,18 @@ from core.prompts import baseline_prompt
 
 
 def run_topic(topic: str, topic_id: str) -> dict:
+    """Write one memo with a single model call over the whole corpus.
+
+    Args:
+        topic: The research topic.
+        topic_id: The topic's ID, e.g. T01.
+
+    Returns:
+        The result dict described in EVALUATION.md.
+
+    Raises:
+        ValueError: If the provider returns no memo text.
+    """
     corpus = MARKET_CORPUS_MD.read_text(encoding="utf-8")
     message = make_llm().invoke([HumanMessage(baseline_prompt(topic, corpus))])
     memo = message.content

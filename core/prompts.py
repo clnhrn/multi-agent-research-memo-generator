@@ -90,10 +90,27 @@ If an earlier summary is included, fold it in; do not repeat it verbatim."""
 
 
 def format_evidence(snippets: Sequence[Mapping]) -> str:
+    """Format snippets as one "[ID] text" line each.
+
+    Args:
+        snippets: Dumped `Snippet` dicts.
+
+    Returns:
+        The evidence block, or an empty string if there are no snippets.
+    """
     return "\n".join(f"[{s['source']}] {s['text']}" for s in snippets)
 
 
 def researcher_request(topic: str, found: Sequence[Mapping]) -> str:
+    """Build the request for extra search queries.
+
+    Args:
+        topic: The research topic.
+        found: Dumped `Snippet` dicts from the first search.
+
+    Returns:
+        The researcher's user prompt.
+    """
     return f"Topic: {topic}\n\nFound so far:\n{format_evidence(found) or '(nothing)'}"
 
 
@@ -103,6 +120,17 @@ def writer_request(
     previous_draft: str | None = None,
     reasons: Sequence[str] | None = None,
 ) -> str:
+    """Build the request for a first draft or a revision.
+
+    Args:
+        topic: The research topic.
+        snippets: Dumped `Snippet` dicts the memo may cite.
+        previous_draft: The rejected memo as plain text, when revising.
+        reasons: The reviewer's reasons for the rejection, when revising.
+
+    Returns:
+        The writer's user prompt.
+    """
     ids = ", ".join(s["source"] for s in snippets)
     parts = [f"Topic: {topic}", f"Evidence (cite only {ids}):\n{format_evidence(snippets)}"]
     if previous_draft is not None:
@@ -115,11 +143,29 @@ def writer_request(
 
 
 def reviewer_request(memo_text: str, automatic_failures: Sequence[str]) -> str:
+    """Build the review request.
+
+    Args:
+        memo_text: The memo as plain text.
+        automatic_failures: Problems already found by `check_memo`.
+
+    Returns:
+        The reviewer's user prompt.
+    """
     checks = "\n".join(f"- FAILED: {p}" for p in automatic_failures) or "- all passed"
     return f"Memo:\n{memo_text}\n\nAutomatic checks:\n{checks}"
 
 
 def baseline_prompt(topic: str, corpus: str) -> str:
+    """Build the single-agent prompt.
+
+    Args:
+        topic: The research topic.
+        corpus: The full corpus text.
+
+    Returns:
+        The baseline's user prompt.
+    """
     return f"""Write a professional research memo on the topic using only the corpus.
 Return plain text: a title line, the body, then a "{FOOTNOTES_HEADING}" section.
 

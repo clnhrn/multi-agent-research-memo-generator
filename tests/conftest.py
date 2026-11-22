@@ -1,3 +1,5 @@
+"""Shared fixtures: temporary logs and a fresh state."""
+
 import pytest
 
 import core.trace
@@ -13,4 +15,5 @@ def tmp_logs(tmp_path, monkeypatch):
 
 @pytest.fixture
 def state():
+    """Return a fresh state for T01."""
     return new_state("Assess rooftop solar installation trends in Northstar.", "T01")

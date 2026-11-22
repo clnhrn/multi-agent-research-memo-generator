@@ -1,3 +1,5 @@
+"""Word counts, citations, sentences and the deterministic memo checks."""
+
 import pytest
 
 from core.config import MIN_WORDS

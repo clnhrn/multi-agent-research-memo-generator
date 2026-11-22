@@ -44,16 +44,33 @@ class ConfigError(RuntimeError):
 
 @dataclass(frozen=True)
 class Settings:
+    """Model connection settings.
+
+    Attributes:
+        api_key: Secret key for the model endpoint.
+        base_url: URL of the OpenAI-compatible endpoint.
+        model: Name of the chat model.
+    """
+
     api_key: str
     base_url: str
     model: str
 
     def __repr__(self) -> str:  # never expose the key in logs or tracebacks
+        """Return a representation without the API key, for safe logs and tracebacks."""
         return f"Settings(base_url={self.base_url!r}, model={self.model!r})"
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
+    """Read the model settings from the environment, once.
+
+    Returns:
+        The model connection settings.
+
+    Raises:
+        ConfigError: If a required variable is missing or empty.
+    """
     missing = [name for name in MODEL_ENV_VARS if not os.getenv(name)]
     if missing:
         raise ConfigError(
@@ -64,7 +81,14 @@ def get_settings() -> Settings:
 
 @lru_cache(maxsize=1)
 def make_llm() -> "ChatOpenAI":
-    """The only place a chat model is constructed."""
+    """Build the chat model, the only place one is constructed.
+
+    Returns:
+        The chat model shared by the baseline and every agent.
+
+    Raises:
+        ConfigError: If a required variable is missing or empty.
+    """
     from langchain_openai import ChatOpenAI
 
     settings = get_settings()

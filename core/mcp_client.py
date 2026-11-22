@@ -21,7 +21,11 @@ class MCPToolError(RuntimeError):
 
 @asynccontextmanager
 async def mcp_session() -> AsyncIterator[ClientSession]:
-    """Launch the corpus server over stdio and yield an initialised session."""
+    """Launch the corpus server over stdio.
+
+    Yields:
+        An initialised client session.
+    """
     params = StdioServerParameters(command=sys.executable, args=[str(MCP_SERVER_SCRIPT)])
     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
         await session.initialize()
@@ -29,14 +33,26 @@ async def mcp_session() -> AsyncIterator[ClientSession]:
 
 
 def _items(result: CallToolResult) -> list[dict]:
-    """Tool output as dicts, from structured content when the server sends it."""
+    """Return tool output as dicts, from structured content when the server sends it."""
     if result.structuredContent is not None:
         return result.structuredContent.get("result", [])
     return [json.loads(c.text) for c in result.content if isinstance(c, TextContent)]
 
 
 async def search(session: ClientSession, query: str, limit: int = MAX_SNIPPETS) -> list[Snippet]:
-    """Call `search_corpus` and validate each result as a Snippet."""
+    """Call `search_corpus` and validate each result.
+
+    Args:
+        session: An initialised client session.
+        query: Search text.
+        limit: Maximum number of results.
+
+    Returns:
+        The matching snippets, best first; empty if nothing is relevant.
+
+    Raises:
+        MCPToolError: If the server reports an error for the call.
+    """
     result = await session.call_tool(SEARCH_TOOL, {"query": query, "limit": limit})
     if result.isError:
         text = " ".join(c.text for c in result.content if isinstance(c, TextContent))

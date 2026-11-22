@@ -19,6 +19,13 @@ from core.text import SOURCE_ID
 
 
 class Snippet(BaseModel):
+    """One paragraph of evidence.
+
+    Attributes:
+        text: The paragraph text.
+        source: The corpus source ID, e.g. P01.
+    """
+
     text: str
     source: str = Field(description="Corpus source ID, e.g. P01")
 
@@ -31,6 +38,12 @@ class Snippet(BaseModel):
 
 
 class ResearchResult(BaseModel):
+    """The Researcher's typed output.
+
+    Attributes:
+        snippets: Between 1 and MAX_SNIPPETS snippets with unique sources, best first.
+    """
+
     snippets: list[Snippet]
 
     @field_validator("snippets")
@@ -56,6 +69,8 @@ class SubQueries(BaseModel):
 
 
 class Memo(BaseModel):
+    """The Writer's research memo."""
+
     title: str
     body: str = Field(description="Plain prose with inline citations like [P01]")
     footnotes: list[str] = Field(description='One per cited ID, e.g. "[P01] Solar capacity"')
@@ -81,6 +96,13 @@ class ReviewFindings(BaseModel):
 
 
 class Verdict(BaseModel):
+    """The Reviewer's decision, computed in code from verified findings.
+
+    Attributes:
+        decision: Whether to accept the memo or send it back.
+        reasons: Why the memo was rejected; required for "revise".
+    """
+
     decision: Literal["accept", "revise"]
     reasons: list[str]
 
@@ -96,6 +118,25 @@ TERMINAL_STATUSES: frozenset[str] = frozenset({"completed", "escalated", "max_tu
 
 
 class State(TypedDict):
+    """Shared scratchpad state; plain JSON apart from `messages`.
+
+    Attributes:
+        topic: The research topic.
+        snippets: Dumped `ResearchResult.snippets`.
+        draft_memo: Dumped `Memo`, or None before the first draft.
+        review_verdict: Dumped `Verdict`, or None while a draft awaits review.
+        turn_count: Supervisor handoff decisions so far.
+        summary: Rolling summary of compacted messages.
+        status: Whether the run is in progress, or how it ended.
+        run_id: ID used in log and scratchpad file names.
+        topic_id: The topic's ID, e.g. T01.
+        rejections: Reviewer rejections so far.
+        mcp_calls: MCP searches so far.
+        total_tokens: Provider-reported tokens, or None once any call lacks usage.
+        messages: Memory log, never read by workers.
+        trace: Append-only event log.
+    """
+
     # Required scratchpad fields (R4)
     topic: str
     snippets: list[dict[str, Any]]  # ResearchResult.snippets, dumped
@@ -115,6 +156,16 @@ class State(TypedDict):
 
 
 def new_state(topic: str, topic_id: str, run_id: str | None = None) -> State:
+    """Create the state for a fresh run.
+
+    Args:
+        topic: The research topic.
+        topic_id: The topic's ID, e.g. T01.
+        run_id: ID for log and scratchpad files; defaults to `topic_id`.
+
+    Returns:
+        A state with no work done yet.
+    """
     return State(
         topic=topic,
         snippets=[],
