@@ -1,7 +1,9 @@
-"""Shared fixtures: temporary logs, a fresh state and a faked model call."""
+"""Shared fixtures: temporary logs and scratchpad, a fresh state and a faked model call."""
 
 import pytest
+from langchain_core.messages import HumanMessage
 
+import core.scratchpad
 import core.trace
 import team
 from core.schemas import new_state
@@ -12,6 +14,13 @@ def tmp_logs(tmp_path, monkeypatch):
     """Keep test traces out of the real logs/ directory."""
     monkeypatch.setattr(core.trace, "LOG_DIR", tmp_path / "logs")
     return tmp_path / "logs"
+
+
+@pytest.fixture(autouse=True)
+def tmp_scratchpad(tmp_path, monkeypatch):
+    """Keep test runs out of the real scratchpad/ directory."""
+    monkeypatch.setattr(core.scratchpad, "SCRATCHPAD_DIR", tmp_path / "scratchpad")
+    return tmp_path / "scratchpad"
 
 
 @pytest.fixture
@@ -34,7 +43,7 @@ def fake_call(monkeypatch):
             _call.calls.append((role, user))
             update = {
                 "total_tokens": state["total_tokens"] + 10,
-                "messages": [],
+                "messages": [HumanMessage(user, name=role)],
                 "trace": [{"kind": "llm_call", "data": {"role": role}}],
             }
             return output(state, role) if callable(output) else output, update
