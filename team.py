@@ -4,6 +4,7 @@ Role boundaries (R1, R2):
 - Supervisor: a status line from typed fields in, one handoff tool out. Stops are code.
 - Researcher: topic in, MCP `search_corpus` only, ResearchResult out.
 - Writer: topic + snippets (+ previous draft and reviewer reasons) in, Memo out. No MCP.
+  Checks its own draft's length and fixes it once before handing over.
 - Reviewer: memo + static rubric in, Verdict out. Never sees the evidence. Its model
   proposes violations; code verifies them and computes the decision.
 Workers read typed state fields only, never the `messages` memory log.
@@ -33,6 +34,7 @@ from core.prompts import (
     REVIEWER_PROMPT,
     SUPERVISOR_PROMPT,
     WRITER_PROMPT,
+    length_fix_request,
     researcher_request,
     reviewer_request,
     supervisor_request,
@@ -60,6 +62,7 @@ from core.text import (
     extract_citations,
     has_citation,
     has_figure,
+    length_ok,
     render_memo,
     states_missing_data,
 )
@@ -276,6 +279,42 @@ def researcher(state: State) -> Command[Literal["supervisor"]]:
 # --- Writer ---------------------------------------------------------------------
 
 
+def fix_length(
+    state: State, request: str, memo: Memo, update: dict[str, Any]
+) -> tuple[Memo, dict[str, Any]]:
+    """Ask the writer once to bring its own draft into the length range.
+
+    Cheaper than a rejection, which costs two turns and one of the allowed rejections.
+
+    Args:
+        state: Current run state.
+        request: The request the draft answered.
+        memo: The draft that is too short or too long.
+        update: The state update of the call that wrote the draft.
+
+    Returns:
+        The fixed memo, or the draft if the fix is out of range too, and the update
+        covering both calls.
+    """
+    words = body_word_count(memo.body)
+    fixed, fix_update = call(
+        apply_update(state, update),
+        "writer",
+        WRITER_PROMPT,
+        length_fix_request(request, render_memo(memo.model_dump()), words),
+        schema=Memo,
+    )
+    kept = length_ok(fixed.body)
+    event = log_event(
+        state, "length_fix", before=words, after=body_word_count(fixed.body), kept=kept
+    )
+    return fixed if kept else memo, {
+        **fix_update,
+        "messages": [*update["messages"], *fix_update["messages"]],
+        "trace": [*update["trace"], *fix_update["trace"], event],
+    }
+
+
 def writer(state: State) -> Command[Literal["supervisor"]]:
     """Draft the memo from the snippets, or revise a rejected draft.
 
@@ -294,6 +333,8 @@ def writer(state: State) -> Command[Literal["supervisor"]]:
         reasons=verdict["reasons"] if revising else None,
     )
     memo, update = call(state, "writer", WRITER_PROMPT, request, schema=Memo)
+    if not length_ok(memo.body):
+        memo, update = fix_length(state, request, memo, update)
     evidence = {s["source"] for s in state["snippets"]}
     event = log_event(
         state,

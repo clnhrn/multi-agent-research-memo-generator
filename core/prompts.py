@@ -15,6 +15,7 @@ from core.text import FOOTNOTES_HEADING, body_word_count
 # Models can't count words reliably, so the length rule also gives a paragraph structure.
 _PARAGRAPHS = 4
 _TARGET_WORDS = (MIN_WORDS + MAX_WORDS) // 2
+_SAFE_MIN_WORDS = MIN_WORDS + 25  # a repaired draft should clear the minimum with a margin
 
 # The pass bar (used by the rubric): a cause, motive, prediction or recommendation is only
 # acceptable when the sentence attributes it to a cited source.
@@ -173,6 +174,37 @@ def writer_request(
             f"Reviewer feedback to address:\n{feedback}",
         ]
     return "\n\n".join(parts)
+
+
+def length_fix_request(request: str, memo_text: str, words: int) -> str:
+    """Build the request to bring a draft into the length range.
+
+    The model cannot count words, so code supplies the count and the shortfall or excess.
+
+    Args:
+        request: The request the draft answered, so the evidence stays available.
+        memo_text: The draft as plain text.
+        words: The draft's body word count.
+
+    Returns:
+        The writer's user prompt.
+    """
+    if words < MIN_WORDS:
+        fix = f"""Add two or three plain sentences, about {_SAFE_MIN_WORDS - words} words in
+total. Each must be one of these two forms, and nothing else:
+- a figure from the evidence, ending with its citation;
+- "The data does not report ..." followed by something the evidence really does not cover
+  in any unit or form, with no reasons, effects or importance.
+Do not add interpretation: no trends, meaning, impact or significance."""
+    else:
+        fix = f"Cut about {words - _TARGET_WORDS} words, starting with repeated sentences."
+    return f"""{request}
+
+Your draft:
+{memo_text}
+
+The draft's body is {words} words; it must be {MIN_WORDS}-{MAX_WORDS}. {fix}
+Keep every other sentence verbatim and return the whole memo."""
 
 
 def reviewer_request(memo_text: str, automatic_failures: Sequence[str]) -> str:
