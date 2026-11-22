@@ -166,3 +166,35 @@ def render_memo(memo: Mapping) -> str:
     """
     footnotes = "\n".join(memo["footnotes"])
     return f"{memo['title']}\n\n{memo['body']}\n\n{FOOTNOTES_HEADING}\n{footnotes}"
+
+
+_FOOTNOTES_LINE = re.compile(
+    rf"^[\W_]*{re.escape(FOOTNOTES_HEADING.rstrip(':'))}[\W_]*$", re.IGNORECASE | re.MULTILINE
+)
+
+
+def parse_memo(text: str) -> dict | None:
+    """Split a plain-text memo, the reverse of `render_memo`.
+
+    Used on both systems' memos so they are checked the same way. Markdown around the
+    heading, such as "**Footnotes:**", is accepted.
+
+    Args:
+        text: The memo as plain text.
+
+    Returns:
+        The memo as a dict with `title`, `body` and `footnotes`, or None if it has no
+        title line, body and footnotes heading.
+    """
+    headings = list(_FOOTNOTES_LINE.finditer(text))
+    if not headings:
+        return None
+    title, _, body = text[: headings[-1].start()].strip().partition("\n")
+    if not body.strip():
+        return None
+    notes = text[headings[-1].end() :].splitlines()
+    return {
+        "title": title.strip(),
+        "body": body.strip(),
+        "footnotes": [line.strip() for line in notes if line.strip()],
+    }

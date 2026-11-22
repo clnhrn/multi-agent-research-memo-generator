@@ -515,8 +515,10 @@ def run_team(topic: str, topic_id: str, run_id: str | None = None, fresh: bool =
     return build_graph().invoke(start_state(topic, topic_id, run_id, fresh))
 
 
-def run_topic(topic: str, topic_id: str, *, fresh: bool = False) -> dict:
+def run_topic(topic: str, topic_id: str, *, fresh: bool = False) -> dict[str, Any]:
     """Run the team on one topic, following the adapter contract in EVALUATION.md.
+
+    The status is the run's own: only a memo the Reviewer accepted is "completed".
 
     Args:
         topic: The research topic.
@@ -524,13 +526,23 @@ def run_topic(topic: str, topic_id: str, *, fresh: bool = False) -> dict:
         fresh: Ignore any saved run.
 
     Returns:
-        The result dict described in EVALUATION.md.
+        The result dict described in EVALUATION.md. The memo is the last draft, empty if
+        none was written; `total_tokens` is None if the provider left out any usage.
 
     Raises:
-        NotImplementedError: Always, until Phase 7.
+        ScratchpadError: If the saved run is corrupt or is about another topic.
     """
-    # TODO (Phase 7): call run_team and build the result from the final state.
-    raise NotImplementedError("Implement run_topic adapter")
+    final = run_team(topic, topic_id, fresh=fresh)
+    memo = final["draft_memo"]
+    return {
+        "topic_id": topic_id,
+        "memo": render_memo(memo) if memo else "",
+        "total_tokens": final["total_tokens"],
+        "turns": final["turn_count"],
+        "rejections": final["rejections"],
+        "mcp_calls": final["mcp_calls"],
+        "status": final["status"],
+    }
 
 
 def main() -> None:
