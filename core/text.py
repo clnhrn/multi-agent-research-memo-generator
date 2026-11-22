@@ -16,20 +16,29 @@ FOOTNOTES_HEADING = "Footnotes:"
 
 
 def extract_citations(text: str) -> list[str]:
-    """Source IDs cited in brackets, in order, including [P01, P02] forms."""
+    """Find the source IDs cited in brackets, including [P01, P02] forms.
+
+    Args:
+        text: Text to search.
+
+    Returns:
+        Source IDs in order of appearance, with repeats.
+    """
     return [sid for group in _BRACKET.findall(text) for sid in SOURCE_ID.findall(group)]
 
 
 def strip_citations(text: str) -> str:
+    """Return the text without its citation brackets."""
     return _BRACKET.sub(lambda m: "" if SOURCE_ID.search(m.group(1)) else m.group(0), text)
 
 
 def word_count(text: str) -> int:
+    """Return the number of words in the text."""
     return len(_WORD.findall(text))
 
 
 def body_word_count(body: str) -> int:
-    """Words in the memo body, not counting citation brackets."""
+    """Return the number of words in the memo body, without citation brackets."""
     return word_count(strip_citations(body))
 
 
@@ -39,8 +48,17 @@ _DIGIT = re.compile(r"\d")
 
 
 def sentences(body: str) -> list[str]:
-    """Split prose into sentences; a citation written after the full stop stays with
-    the sentence it closes ("... 2024. [P01] Next" -> "... 2024. [P01]", "Next")."""
+    """Split prose into sentences.
+
+    A citation written after the full stop stays with the sentence it closes
+    ("... 2024. [P01] Next" -> "... 2024. [P01]", "Next").
+
+    Args:
+        body: The memo body.
+
+    Returns:
+        The sentences in order.
+    """
     result: list[str] = []
     for part in _SENTENCE_END.split(body.strip()):
         lead = _LEADING_CITES.match(part)
@@ -53,10 +71,12 @@ def sentences(body: str) -> list[str]:
 
 
 def has_citation(text: str) -> bool:
+    """Return whether the text cites at least one source."""
     return bool(extract_citations(text))
 
 
 def has_figure(text: str) -> bool:
+    """Return whether the text contains a digit outside its citations."""
     return bool(_DIGIT.search(strip_citations(text)))
 
 
@@ -70,12 +90,28 @@ _MISSING_DATA = re.compile(
 
 
 def states_missing_data(sentence: str) -> bool:
-    """True for sentences about what the data does not cover ("the data does not report...")."""
+    """Check whether a sentence says what the data does not cover.
+
+    Args:
+        sentence: The sentence, e.g. "The data does not report generation."
+
+    Returns:
+        True if the sentence describes missing data.
+    """
     return bool(_MISSING_DATA.search(sentence))
 
 
 def best_sentence(body: str, quote: str) -> tuple[str | None, float]:
-    """The body sentence that best contains `quote`, with the share of quote words found."""
+    """Find the body sentence that best contains a quote.
+
+    Args:
+        body: The memo body.
+        quote: The text to look for.
+
+    Returns:
+        The sentence and the share of quote words found in it. The sentence is None if the
+        quote or the body is empty.
+    """
     quote_words = set(_WORD.findall(quote.lower()))
     if not quote_words:
         return None, 0.0
@@ -88,7 +124,14 @@ def best_sentence(body: str, quote: str) -> tuple[str | None, float]:
 
 
 def check_memo(memo: Mapping) -> list[str]:
-    """Deterministic rubric checks on the memo alone; returns problems, empty if none."""
+    """Run the deterministic rubric checks on the memo alone.
+
+    Args:
+        memo: A dumped `Memo`.
+
+    Returns:
+        The problems found, empty if none.
+    """
     body = memo["body"]
     problems = []
     words = body_word_count(body)
@@ -108,6 +151,13 @@ def check_memo(memo: Mapping) -> list[str]:
 
 
 def render_memo(memo: Mapping) -> str:
-    """Plain-text memo: title, body, then footnotes."""
+    """Render a memo as plain text: title, body, then footnotes.
+
+    Args:
+        memo: A dumped `Memo`.
+
+    Returns:
+        The memo text.
+    """
     footnotes = "\n".join(memo["footnotes"])
     return f"{memo['title']}\n\n{memo['body']}\n\n{FOOTNOTES_HEADING}\n{footnotes}"

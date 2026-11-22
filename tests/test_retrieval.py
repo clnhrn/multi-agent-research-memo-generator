@@ -1,3 +1,5 @@
+"""Retrieval ranking, and a real MCP round trip over stdio."""
+
 import asyncio
 import json
 

@@ -44,7 +44,7 @@ def _terms(text: str) -> set[str]:
 
 @lru_cache(maxsize=1)
 def _index() -> tuple[dict[str, set[str]], dict[str, float]]:
-    """Terms per paragraph and smoothed IDF per term, built once."""
+    """Return the terms per paragraph and the smoothed IDF per term, built once."""
     docs = {row["id"]: _terms(row["text"]) for row in load_rows()}
     n = len(docs)
     doc_freq: dict[str, int] = {}
@@ -56,7 +56,14 @@ def _index() -> tuple[dict[str, set[str]], dict[str, float]]:
 
 
 def rank(query: str) -> list[tuple[float, str]]:
-    """(score, source ID) for paragraphs above the cut-off, best first."""
+    """Rank the paragraphs that match a query.
+
+    Args:
+        query: Search text.
+
+    Returns:
+        (score, source ID) pairs above the cut-off, best first.
+    """
     docs, idf = _index()
     query_terms = _terms(query)
     names = {_stem(w.lower()) for w in _NAME.findall(query)}
@@ -73,19 +80,31 @@ def rank(query: str) -> list[tuple[float, str]]:
 
 @server.resource("corpus://market/corpus.csv", mime_type="text/csv")
 def corpus() -> str:
+    """Return the market corpus as CSV."""
     return CORPUS_CSV.read_text(encoding="utf-8")
 
 
 @server.resource("corpus://market/glossary.md", mime_type="text/markdown")
 def glossary() -> str:
+    """Return the glossary as Markdown."""
     return GLOSSARY_MD.read_text(encoding="utf-8")
 
 
 @server.tool()
 def search_corpus(query: str, limit: int = 5) -> list[dict[str, str]]:
-    """Search the market corpus. Returns up to `limit` relevant paragraphs, best
-    first, each as {"text", "source"} where source is a citation ID like P01.
-    Returns an empty list when nothing is relevant."""
+    """Search the market corpus.
+
+    Args:
+        query: Search text.
+        limit: Maximum number of paragraphs to return.
+
+    Returns:
+        Relevant paragraphs, best first, each as {"text", "source"} where source is a
+        citation ID like P01. Empty when nothing is relevant.
+
+    Raises:
+        ValueError: If `limit` is below 1 or above the number of paragraphs.
+    """
     rows = {row["id"]: row["text"] for row in load_rows()}
     if not 1 <= limit <= len(rows):
         raise ValueError(f"limit must be between 1 and {len(rows)}")

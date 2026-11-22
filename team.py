@@ -70,6 +70,7 @@ def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewe
 
 
 def sources(snippets: list[Snippet]) -> list[str]:
+    """Return the source ID of each snippet."""
     return [s.source for s in snippets]
 
 
@@ -77,6 +78,12 @@ async def _research(state: State) -> dict[str, Any]:
     """Search the topic via MCP; if fewer than MIN_SNIPPETS, try typed sub-queries.
 
     Never pads with irrelevant text: a shortfall is recorded, not hidden.
+
+    Args:
+        state: Current run state; only the topic and counters are used.
+
+    Returns:
+        The state update with snippets, MCP call count and trace.
     """
     topic, update, trace = state["topic"], {}, []
     async with mcp_session() as session:
@@ -121,6 +128,14 @@ async def _research(state: State) -> dict[str, Any]:
 
 
 def researcher(state: State) -> Command[Literal["supervisor"]]:
+    """Gather evidence through MCP `search_corpus`, the only role that may.
+
+    Args:
+        state: Current run state.
+
+    Returns:
+        A command to the supervisor with the snippets.
+    """
     return Command(goto="supervisor", update=asyncio.run(_research(state)))
 
 
@@ -128,6 +143,14 @@ def researcher(state: State) -> Command[Literal["supervisor"]]:
 
 
 def writer(state: State) -> Command[Literal["supervisor"]]:
+    """Draft the memo from the snippets, or revise a rejected draft.
+
+    Args:
+        state: Current run state.
+
+    Returns:
+        A command to the supervisor with the new, unreviewed draft.
+    """
     verdict = state["review_verdict"]
     revising = verdict is not None and verdict["decision"] == "revise"
     request = writer_request(
@@ -167,10 +190,17 @@ _NEEDS_ATTRIBUTION = {"cause_or_motive", "prediction", "recommendation", "outsid
 
 
 def verify(body: str, violations: list[Violation]) -> tuple[list[Violation], list[dict]]:
-    """Keep only violations the memo text supports; return (kept, dropped with reasons).
+    """Keep only the violations the memo text supports.
 
     The model proposes, code verifies: a quote must exist in the memo, an attributed
     (cited) sentence cannot be an unsupported claim, and an uncited figure needs a figure.
+
+    Args:
+        body: The memo body.
+        violations: Violations proposed by the Reviewer model.
+
+    Returns:
+        The violations kept, and the dropped ones with the reason for each.
     """
     kept, dropped = [], []
     for v in violations:
@@ -191,6 +221,14 @@ def verify(body: str, violations: list[Violation]) -> tuple[list[Violation], lis
 
 
 def reviewer(state: State) -> Command[Literal["supervisor"]]:
+    """Review the draft against the static rubric, without seeing the evidence.
+
+    Args:
+        state: Current run state; only the draft and counters are used.
+
+    Returns:
+        A command to the supervisor with the verdict.
+    """
     memo = state["draft_memo"]
     failures = check_memo(memo)
     findings, update = call(
@@ -226,6 +264,7 @@ def reviewer(state: State) -> Command[Literal["supervisor"]]:
 
 
 def build_graph():
+    """Return the compiled graph, with the supervisor as its entry point."""
     graph = StateGraph(State)
     for name, node in [
         ("supervisor", supervisor),
@@ -239,6 +278,17 @@ def build_graph():
 
 
 def run_topic(topic: str, topic_id: str) -> dict:
-    """Implement adapter contract documented in EVALUATION.md."""
+    """Run the team on one topic, following the adapter contract in EVALUATION.md.
+
+    Args:
+        topic: The research topic.
+        topic_id: The topic's ID, e.g. T01.
+
+    Returns:
+        The result dict described in EVALUATION.md.
+
+    Raises:
+        NotImplementedError: Always, until Phase 7.
+    """
     # TODO (Phase 7): initialise/resume state, run graph, capture metrics and MCP evidence.
     raise NotImplementedError("Implement run_topic adapter")

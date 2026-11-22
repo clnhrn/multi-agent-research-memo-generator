@@ -1,3 +1,5 @@
+"""Token accounting and the state update built by one model call."""
+
 import json
 
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel

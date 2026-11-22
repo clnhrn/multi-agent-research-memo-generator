@@ -11,7 +11,16 @@ from core.config import LOG_DIR
 
 
 def log_event(state: dict[str, Any], kind: str, **data: Any) -> dict[str, Any]:
-    """Write one event to the run's log file and return it for the state's trace."""
+    """Append one event to the run's log file.
+
+    Args:
+        state: Current run state; gives the run ID and turn.
+        kind: Event type, e.g. "mcp_search".
+        **data: JSON-serialisable event details.
+
+    Returns:
+        The event, for the caller to add to the state's trace.
+    """
     event = {
         "ts": datetime.now(UTC).isoformat(timespec="seconds"),
         "run_id": state["run_id"],

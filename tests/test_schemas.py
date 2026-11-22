@@ -1,3 +1,5 @@
+"""Schema validation and the state reducers."""
+
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import END, START, StateGraph
@@ -52,7 +54,7 @@ def test_new_state_has_required_scratchpad_fields():
 
 
 def test_state_reducers_append_logs():
-    """messages and trace accumulate across nodes via LangGraph reducers."""
+    """The messages and trace fields accumulate across nodes via LangGraph reducers."""
 
     def node(state):
         return {"messages": [AIMessage("reply")], "trace": [{"kind": "node"}]}

@@ -6,6 +6,7 @@ from core.mcp_client import mcp_session, search
 
 
 async def main() -> None:
+    """List the server's resources and tools, read each resource and run one search."""
     async with mcp_session() as session:
         resources = (await session.list_resources()).resources
         tools = (await session.list_tools()).tools

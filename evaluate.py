@@ -9,7 +9,16 @@ ROOT = Path(__file__).resolve().parent
 VALID_IDS = {f"P{i:02d}" for i in range(1, 13)}
 
 def assess(memo):
-    """Automated checks cannot determine factual support or professional tone."""
+    """Run the automatic checks on a memo.
+
+    They cannot determine factual support or professional tone.
+
+    Args:
+        memo: The memo as plain text.
+
+    Returns:
+        The check results, with `rubric_pass` left as None for manual review.
+    """
     count = len(re.findall(r"\b[\w'-]+\b", memo))
     ids = re.findall(r"\[(P\d{2})\]", memo)
     checks = {"word_count": count, "length_pass": 250 <= count <= 350,
@@ -19,6 +28,15 @@ def assess(memo):
     return checks
 
 def run_one(fn, topic):
+    """Run one system on one topic, reporting any exception as an error result.
+
+    Args:
+        fn: The system's `run_topic` function.
+        topic: A topic dict with `id` and `topic`.
+
+    Returns:
+        The system's result with automatic checks, or an error entry.
+    """
     try:
         result = fn(topic["topic"], topic["id"])
         if not isinstance(result, dict) or not isinstance(result.get("memo"), str):
@@ -31,6 +49,7 @@ def run_one(fn, topic):
                 "checks": {"rubric_pass": None}}
 
 def main():
+    """Run both systems on every topic and write the results as JSON."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="results/evaluation.json")
     args = parser.parse_args()
