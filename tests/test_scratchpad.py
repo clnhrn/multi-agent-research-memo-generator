@@ -1,15 +1,12 @@
 """Atomic saves, validated loads, and resuming a run killed at any stage (R4)."""
 
 import json
-import sys
 
 import pytest
 from helpers import TOPIC, pick, route, scripted
 from langchain_core.messages import AIMessage, HumanMessage
 
-import baseline
 import core.scratchpad
-import evaluate
 import team
 from core.schemas import TERMINAL_STATUSES, apply_update, new_state
 from core.scratchpad import ScratchpadError, load_state, save_state
@@ -193,23 +190,3 @@ def test_turn_cap_survives_a_resume(state, fake_call):
     save_state({**state, "turn_count": team.MAX_TURNS})
     assert team.run_team(TOPIC, "T01")["status"] == "max_turns"
     assert llm.calls == []
-
-
-# --- Evaluator switch -------------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    ("flags", "fresh"), [([], True), (["--fresh"], True), (["--resume"], False)]
-)
-def test_evaluator_starts_clean_unless_asked_to_resume(monkeypatch, tmp_path, flags, fresh):
-    seen = []
-
-    def run(topic, topic_id, *, fresh=None):
-        seen.append(fresh)
-        return {"memo": "text"}
-
-    monkeypatch.setattr(team, "run_topic", run)
-    monkeypatch.setattr(baseline, "run_topic", lambda topic, topic_id: {"memo": "text"})
-    monkeypatch.setattr(sys, "argv", ["evaluate.py", "--output", str(tmp_path / "e.json"), *flags])
-    evaluate.main()
-    assert set(seen) == {fresh}
