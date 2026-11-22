@@ -2,10 +2,12 @@
 import argparse
 import json
 import re
+from functools import partial
 from pathlib import Path
-import baseline
 
-ROOT = Path(__file__).resolve().parent
+import baseline
+from core.config import TOPICS_JSON
+
 VALID_IDS = {f"P{i:02d}" for i in range(1, 13)}
 
 def assess(memo):
@@ -52,16 +54,19 @@ def main():
     """Run both systems on every topic and write the results as JSON."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="results/evaluation.json")
+    start = parser.add_mutually_exclusive_group()
+    start.add_argument("--fresh", action="store_true", help="start every team run clean (default)")
+    start.add_argument("--resume", action="store_true", help="continue unfinished team runs")
     args = parser.parse_args()
-    topics = json.loads((ROOT / "topics.json").read_text(encoding="utf-8"))
+    topics = json.loads(TOPICS_JSON.read_text(encoding="utf-8"))
     try:
         from team import run_topic as team_run
     except ImportError:
-        def team_run(topic, topic_id):
+        def team_run(topic, topic_id, *, fresh):
             raise RuntimeError("Install starter requirements to run the team")
     output = {"note": "Complete manual rubric review and compute ratio as described in EVALUATION.md.",
               "baseline": [run_one(baseline.run_topic, t) for t in topics],
-              "multi_agent": [run_one(team_run, t) for t in topics]}
+              "multi_agent": [run_one(partial(team_run, fresh=not args.resume), t) for t in topics]}
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(output, indent=2), encoding="utf-8")

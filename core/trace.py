@@ -7,7 +7,7 @@ import json
 from datetime import UTC, datetime
 from typing import Any
 
-from core.config import LOG_DIR
+from core.config import LOG_DIR, run_file
 
 
 def log_event(state: dict[str, Any], kind: str, **data: Any) -> dict[str, Any]:
@@ -29,6 +29,6 @@ def log_event(state: dict[str, Any], kind: str, **data: Any) -> dict[str, Any]:
         "data": data,
     }
     LOG_DIR.mkdir(exist_ok=True)
-    with (LOG_DIR / f"run-{state['run_id']}.jsonl").open("a", encoding="utf-8") as f:
+    with run_file(LOG_DIR, state["run_id"], ".jsonl").open("a", encoding="utf-8") as f:
         f.write(json.dumps(event) + "\n")
     return event

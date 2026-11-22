@@ -9,14 +9,23 @@ Role boundaries (R1, R2):
 Workers read typed state fields only, never the `messages` memory log.
 """
 
+import argparse
 import asyncio
+import json
 from typing import Any, Literal
 
 from langchain_core.tools import BaseTool, tool
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
 
-from core.config import MAX_REJECTIONS, MAX_SNIPPETS, MAX_TURNS, MIN_SNIPPETS
+from core.config import (
+    MAX_REJECTIONS,
+    MAX_SNIPPETS,
+    MAX_TURNS,
+    MIN_SNIPPETS,
+    TOPICS_JSON,
+    check_run_id,
+)
 from core.llm import call
 from core.mcp_client import mcp_session, search
 from core.prompts import (
@@ -30,6 +39,7 @@ from core.prompts import (
     writer_request,
 )
 from core.schemas import (
+    TERMINAL_STATUSES,
     Memo,
     ResearchResult,
     ReviewFindings,
@@ -39,7 +49,10 @@ from core.schemas import (
     SubQueries,
     Verdict,
     Violation,
+    apply_update,
+    new_state,
 )
+from core.scratchpad import ScratchpadError, load_state, save_state
 from core.text import (
     best_sentence,
     body_word_count,
@@ -141,17 +154,25 @@ def fallback_handoff(state: State) -> BaseTool:
 def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewer", "__end__"]]:
     """Take one turn: code checks the stops, the model picks a handoff, code checks it.
 
+    The scratchpad is saved twice: on entry, so the worker that just finished is not
+    repeated after a kill, and at the end of the turn with the pending handoff.
+
     Args:
         state: Current run state.
 
     Returns:
         A command to the chosen worker, or to END with the final status.
     """
+    state = {**state, "pending": None}
+    save_state(state)
+
     stop = stop_reason(state)
     if stop is not None:
         status, reason = stop
         event = log_event(state, "stop", status=status, reason=reason)
-        return Command(goto=END, update={"status": status, "trace": [event]})
+        update = {"status": status, "pending": None, "trace": [event]}
+        save_state(apply_update(state, update))
+        return Command(goto=END, update=update)
 
     # A turn is one handoff decision; the stop check above makes no decision and is not counted.
     state = {**state, "turn_count": state["turn_count"] + 1}
@@ -168,15 +189,15 @@ def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewe
     event = log_event(
         state, "supervisor_decision", chosen=chosen, handoff=handoff.name, redirected=problem
     )
-    # TODO (Phase 5): save the scratchpad at the end of every turn.
-    return Command(
-        goto=handoff.invoke({}).goto,
-        update={
-            **update,
-            "turn_count": state["turn_count"],
-            "trace": [*update["trace"], event],
-        },
-    )
+    worker = handoff.invoke({}).goto
+    update = {
+        **update,
+        "turn_count": state["turn_count"],
+        "pending": worker,
+        "trace": [*update["trace"], event],
+    }
+    save_state(apply_update(state, update))
+    return Command(goto=worker, update=update)
 
 
 # --- Researcher -----------------------------------------------------------------
@@ -376,26 +397,80 @@ def reviewer(state: State) -> Command[Literal["supervisor"]]:
 # --- Graph and adapter ----------------------------------------------------------
 
 
+def entry_point(state: State) -> str:
+    """Return the first node: the pending worker of a killed run, otherwise the supervisor."""
+    return state["pending"] or "supervisor"
+
+
 def build_graph():
-    """Return the compiled graph, with the supervisor as its entry point."""
+    """Return the compiled graph; a fresh run starts at the supervisor."""
     graph = StateGraph(State)
-    for name, node in [
-        ("supervisor", supervisor),
-        ("researcher", researcher),
-        ("writer", writer),
-        ("reviewer", reviewer),
-    ]:
+    nodes = {
+        "supervisor": supervisor,
+        "researcher": researcher,
+        "writer": writer,
+        "reviewer": reviewer,
+    }
+    for name, node in nodes.items():
         graph.add_node(name, node)
-    graph.add_edge(START, "supervisor")
+    graph.add_conditional_edges(START, entry_point, list(nodes))
     return graph.compile()
 
 
-def run_topic(topic: str, topic_id: str) -> dict:
+def start_state(topic: str, topic_id: str, run_id: str | None = None, fresh: bool = False) -> State:
+    """Load an unfinished run from the scratchpad, or start a new one.
+
+    Args:
+        topic: The research topic.
+        topic_id: The topic's ID, e.g. T01.
+        run_id: The run's ID; defaults to `topic_id`.
+        fresh: Ignore any saved run.
+
+    Returns:
+        The state to run the graph from.
+
+    Raises:
+        ScratchpadError: If the saved run is corrupt or is about another topic.
+        ValueError: If the run ID is not a safe file name.
+    """
+    saved = None if fresh else load_state(run_id or topic_id)
+    if saved is None or saved["status"] in TERMINAL_STATUSES:
+        state = new_state(topic, topic_id, run_id)
+        event = log_event(state, "run_started", topic=topic)
+    else:
+        if saved["topic"] != topic:
+            raise ScratchpadError(f"run {saved['run_id']} is about another topic; use --fresh")
+        state = saved
+        event = log_event(state, "resumed", pending=state["pending"])
+    return apply_update(state, {"trace": [event]})
+
+
+def run_team(topic: str, topic_id: str, run_id: str | None = None, fresh: bool = False) -> State:
+    """Run the team on one topic, resuming an unfinished run if there is one.
+
+    Args:
+        topic: The research topic.
+        topic_id: The topic's ID, e.g. T01.
+        run_id: The run's ID; defaults to `topic_id`.
+        fresh: Ignore any saved run.
+
+    Returns:
+        The final state.
+
+    Raises:
+        ScratchpadError: If the saved run is corrupt or is about another topic.
+        ValueError: If the run ID is not a safe file name.
+    """
+    return build_graph().invoke(start_state(topic, topic_id, run_id, fresh))
+
+
+def run_topic(topic: str, topic_id: str, *, fresh: bool = False) -> dict:
     """Run the team on one topic, following the adapter contract in EVALUATION.md.
 
     Args:
         topic: The research topic.
         topic_id: The topic's ID, e.g. T01.
+        fresh: Ignore any saved run.
 
     Returns:
         The result dict described in EVALUATION.md.
@@ -403,5 +478,26 @@ def run_topic(topic: str, topic_id: str) -> dict:
     Raises:
         NotImplementedError: Always, until Phase 7.
     """
-    # TODO (Phase 7): initialise/resume state, run graph, capture metrics and MCP evidence.
+    # TODO (Phase 7): call run_team and build the result from the final state.
     raise NotImplementedError("Implement run_topic adapter")
+
+
+def main() -> None:
+    """Run one topic from the command line, resuming by default."""
+    topics = {t["id"]: t["topic"] for t in json.loads(TOPICS_JSON.read_text(encoding="utf-8"))}
+    parser = argparse.ArgumentParser(description="Run the research memo team on one topic.")
+    parser.add_argument("topic_id", choices=sorted(topics))
+    parser.add_argument(
+        "--run-id", type=check_run_id, help="scratchpad and log name (default: the topic ID)"
+    )
+    parser.add_argument("--fresh", action="store_true", help="ignore any saved run")
+    args = parser.parse_args()
+    try:
+        final = run_team(topics[args.topic_id], args.topic_id, args.run_id, args.fresh)
+    except ScratchpadError as exc:
+        parser.exit(2, f"{exc}\n")
+    print(f"{final['status']}: {final['turn_count']} turns, {final['rejections']} rejections")
+
+
+if __name__ == "__main__":
+    main()

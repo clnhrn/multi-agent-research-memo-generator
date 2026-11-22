@@ -1,6 +1,7 @@
 """Settings, limits and paths: the only place these values are defined."""
 
 import os
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -20,9 +21,46 @@ DATA_DIR = ROOT / "data"
 CORPUS_CSV = DATA_DIR / "corpus.csv"
 GLOSSARY_MD = DATA_DIR / "glossary.md"
 MARKET_CORPUS_MD = DATA_DIR / "market_corpus.md"
+TOPICS_JSON = ROOT / "topics.json"
 MCP_SERVER_SCRIPT = ROOT / "mcp_server.py"
 SCRATCHPAD_DIR = ROOT / "scratchpad"
 LOG_DIR = ROOT / "logs"
+_RUN_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
+def check_run_id(run_id: str) -> str:
+    """Validate a run ID against an allow-list, because it becomes a file name.
+
+    Args:
+        run_id: The run's ID; letters, digits, "_" and "-" only.
+
+    Returns:
+        The run ID, unchanged.
+
+    Raises:
+        ValueError: If the run ID is not a safe file name.
+    """
+    if not _RUN_ID.fullmatch(run_id):
+        raise ValueError("run_id must be 1-64 letters, digits, '_' or '-'")
+    return run_id
+
+
+def run_file(directory: Path, run_id: str, suffix: str) -> Path:
+    """Build the path of a per-run file, the only place run IDs become file names.
+
+    Args:
+        directory: Folder holding the files.
+        run_id: The run's ID.
+        suffix: File extension, e.g. ".json".
+
+    Returns:
+        The path run-<id><suffix> inside the folder.
+
+    Raises:
+        ValueError: If the run ID is not a safe file name.
+    """
+    return directory / f"run-{check_run_id(run_id)}{suffix}"
+
 
 # --- Limits from the assignment ------------------------------------------------
 MAX_TURNS = 8  # supervisor turns per topic (R1)
