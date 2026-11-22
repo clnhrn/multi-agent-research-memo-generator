@@ -1,6 +1,7 @@
 """Research memo team: a LangGraph supervisor coordinating three bounded workers.
 
-Role boundaries (R2):
+Role boundaries (R1, R2):
+- Supervisor: a status line from typed fields in, one handoff tool out. Stops are code.
 - Researcher: topic in, MCP `search_corpus` only, ResearchResult out.
 - Writer: topic + snippets (+ previous draft and reviewer reasons) in, Memo out. No MCP.
 - Reviewer: memo + static rubric in, Verdict out. Never sees the evidence. Its model
@@ -11,18 +12,21 @@ Workers read typed state fields only, never the `messages` memory log.
 import asyncio
 from typing import Any, Literal
 
-from langgraph.graph import START, StateGraph
+from langchain_core.tools import BaseTool, tool
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
 
-from core.config import MAX_SNIPPETS, MIN_SNIPPETS
+from core.config import MAX_REJECTIONS, MAX_SNIPPETS, MAX_TURNS, MIN_SNIPPETS
 from core.llm import call
 from core.mcp_client import mcp_session, search
 from core.prompts import (
     RESEARCHER_PROMPT,
     REVIEWER_PROMPT,
+    SUPERVISOR_PROMPT,
     WRITER_PROMPT,
     researcher_request,
     reviewer_request,
+    supervisor_request,
     writer_request,
 )
 from core.schemas import (
@@ -31,6 +35,7 @@ from core.schemas import (
     ReviewFindings,
     Snippet,
     State,
+    Status,
     SubQueries,
     Verdict,
     Violation,
@@ -47,23 +52,131 @@ from core.text import (
 )
 from core.trace import log_event
 
+# --- Supervisor -----------------------------------------------------------------
 
+
+@tool
 def hand_off_to_researcher() -> Command:
+    """Hand off to the researcher to gather evidence for the topic."""
     return Command(goto="researcher")
 
 
+@tool
 def hand_off_to_writer() -> Command:
+    """Hand off to the writer to draft the memo, or to revise a rejected draft."""
     return Command(goto="writer")
 
 
+@tool
 def hand_off_to_reviewer() -> Command:
+    """Hand off to the reviewer to check a draft that has not been reviewed yet."""
     return Command(goto="reviewer")
 
 
+# The supervisor's whole tool list (R1). No free-text arguments: handoffs dispatch, never chat.
+HANDOFFS = {t.name: t for t in (hand_off_to_researcher, hand_off_to_writer, hand_off_to_reviewer)}
+
+
+def stop_reason(state: State) -> tuple[Status, str] | None:
+    """Check the hard stops, in code.
+
+    Accept is first so a memo accepted on the last turn counts as completed.
+
+    Args:
+        state: Current run state.
+
+    Returns:
+        The final status and the reason, or None if the run should continue.
+    """
+    verdict = state["review_verdict"]
+    if verdict is not None and verdict["decision"] == "accept":
+        return "completed", "reviewer accepted the memo"
+    if state["rejections"] >= MAX_REJECTIONS:
+        return "escalated", f"{state['rejections']} reviewer rejections: needs a human"
+    if state["mcp_calls"] > 0 and not state["snippets"]:
+        return "escalated", "research found no evidence: needs a human"
+    if state["turn_count"] >= MAX_TURNS:
+        return "max_turns", f"reached the cap of {MAX_TURNS} supervisor turns"
+    return None
+
+
+def awaiting_review(state: State) -> bool:
+    """Return whether there is a draft that has not been reviewed yet."""
+    return state["draft_memo"] is not None and state["review_verdict"] is None
+
+
+def blocked(state: State, names: list[str]) -> str | None:
+    """Check whether the model's handoff can run now.
+
+    Args:
+        state: Current run state.
+        names: Names of the tools the model called.
+
+    Returns:
+        Why the handoff cannot run, or None if it can.
+    """
+    if len(names) != 1 or names[0] not in HANDOFFS:
+        return "expected exactly one known handoff"
+    if names[0] == hand_off_to_writer.name and not state["snippets"]:
+        return "writer needs evidence"
+    if names[0] == hand_off_to_reviewer.name and not awaiting_review(state):
+        return "reviewer needs an unreviewed draft"
+    return None
+
+
+def fallback_handoff(state: State) -> BaseTool:
+    """Choose the handoff to use when the model's choice is blocked.
+
+    Args:
+        state: Current run state.
+
+    Returns:
+        The handoff tool for the next missing step.
+    """
+    if not state["snippets"]:
+        return hand_off_to_researcher
+    return hand_off_to_reviewer if awaiting_review(state) else hand_off_to_writer
+
+
 def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewer", "__end__"]]:
-    # TODO (Phase 4): select only typed handoff tools, enforce 8 turns and 3 rejections,
-    # update/persist state after each supervisor turn, handle completion/escalation.
-    raise NotImplementedError("Implement supervisor routing and persistence")
+    """Take one turn: code checks the stops, the model picks a handoff, code checks it.
+
+    Args:
+        state: Current run state.
+
+    Returns:
+        A command to the chosen worker, or to END with the final status.
+    """
+    stop = stop_reason(state)
+    if stop is not None:
+        status, reason = stop
+        event = log_event(state, "stop", status=status, reason=reason)
+        return Command(goto=END, update={"status": status, "trace": [event]})
+
+    # A turn is one handoff decision; the stop check above makes no decision and is not counted.
+    state = {**state, "turn_count": state["turn_count"] + 1}
+    reply, update = call(
+        state,
+        "supervisor",
+        SUPERVISOR_PROMPT,
+        supervisor_request(state),
+        tools=list(HANDOFFS.values()),
+    )
+    chosen = [c["name"] for c in reply.tool_calls]
+    problem = blocked(state, chosen)
+    handoff = fallback_handoff(state) if problem else HANDOFFS[chosen[0]]
+    event = log_event(
+        state, "supervisor_decision", chosen=chosen, handoff=handoff.name, redirected=problem
+    )
+    # TODO (Phase 5): save the scratchpad at the end of every turn.
+    return Command(
+        goto=handoff.invoke({}).goto,
+        update={
+            **update,
+            "turn_count": state["turn_count"],
+            "trace": [*update["trace"], event],
+        },
+    )
 
 
 # --- Researcher -----------------------------------------------------------------
