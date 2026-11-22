@@ -9,6 +9,7 @@ dependencies = [
     "mcp>=1.9,<2",
     "pydantic>=2.14.3,<3",
     "python-dotenv>=1.2.4,<2",
+    "typing-extensions>=4.16,<5",
 ]
 
 [dependency-groups]
