@@ -2,7 +2,9 @@
 
 import pytest
 from langchain_core.messages import HumanMessage
+from langchain_core.messages.utils import count_tokens_approximately
 
+import core.memory
 import core.scratchpad
 import core.trace
 import team
@@ -21,6 +23,14 @@ def tmp_scratchpad(tmp_path, monkeypatch):
     """Keep test runs out of the real scratchpad/ directory."""
     monkeypatch.setattr(core.scratchpad, "SCRATCHPAD_DIR", tmp_path / "scratchpad")
     return tmp_path / "scratchpad"
+
+
+@pytest.fixture(autouse=True)
+def offline_token_count(monkeypatch):
+    """Count tokens without downloading a tokenizer or reading model settings."""
+    monkeypatch.setattr(
+        core.memory, "count_tokens", lambda messages: (count_tokens_approximately(messages), "test")
+    )
 
 
 @pytest.fixture
@@ -50,6 +60,7 @@ def fake_call(monkeypatch):
 
         _call.calls = []
         monkeypatch.setattr(team, "call", _call)
+        monkeypatch.setattr(core.memory, "call", _call)
         return _call
 
     return install
