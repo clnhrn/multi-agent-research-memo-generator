@@ -69,6 +69,7 @@ MIN_WORDS, MAX_WORDS = 250, 350  # memo body length
 MIN_SNIPPETS, MAX_SNIPPETS = 3, 5  # researcher output
 MAX_SUBQUERIES = 2  # extra MCP searches when the first one finds < MIN_SNIPPETS
 COMPACTION_TOKENS = int(os.getenv("COMPACTION_TOKENS", "8000"))  # R5 trigger
+KEEP_RECENT_MESSAGES = 4  # the last two exchanges stay verbatim after a compaction
 
 # --- Model settings (identical for baseline and team) --------------------------
 TEMPERATURE = 0

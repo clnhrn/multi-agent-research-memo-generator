@@ -1,7 +1,8 @@
 """Research memo team: a LangGraph supervisor coordinating three bounded workers.
 
 Role boundaries (R1, R2):
-- Supervisor: a status line from typed fields in, one handoff tool out. Stops are code.
+- Supervisor: a status line from typed fields in (plus the rolling summary once there is
+  one), one handoff tool out. Stops are code.
 - Researcher: topic in, MCP `search_corpus` only, ResearchResult out.
 - Writer: topic + snippets (+ previous draft and reviewer reasons) in, Memo out. No MCP.
   Checks its own draft's length and fixes it once before handing over.
@@ -15,6 +16,7 @@ import asyncio
 import json
 from typing import Any, Literal
 
+from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool, tool
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
@@ -29,11 +31,13 @@ from core.config import (
 )
 from core.llm import call
 from core.mcp_client import mcp_session, search
+from core.memory import maybe_compact
 from core.prompts import (
     RESEARCHER_PROMPT,
     REVIEWER_PROMPT,
     SUPERVISOR_PROMPT,
     WRITER_PROMPT,
+    format_evidence,
     length_fix_request,
     researcher_request,
     reviewer_request,
@@ -52,6 +56,7 @@ from core.schemas import (
     Verdict,
     Violation,
     apply_update,
+    merge_updates,
     new_state,
 )
 from core.scratchpad import ScratchpadError, load_state, save_state
@@ -157,8 +162,8 @@ def fallback_handoff(state: State) -> BaseTool:
 def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewer", "__end__"]]:
     """Take one turn: code checks the stops, the model picks a handoff, code checks it.
 
-    The scratchpad is saved twice: on entry, so the worker that just finished is not
-    repeated after a kill, and at the end of the turn with the pending handoff.
+    The scratchpad is saved on entry, so the worker that just finished is not repeated
+    after a kill; after a compaction; and at the end of the turn with the pending handoff.
 
     Args:
         state: Current run state.
@@ -168,6 +173,10 @@ def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewe
     """
     state = {**state, "pending": None}
     save_state(state)
+    memory = maybe_compact(state)
+    if memory:
+        state = apply_update(state, memory)
+        save_state(state)
 
     stop = stop_reason(state)
     if stop is not None:
@@ -175,7 +184,7 @@ def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewe
         event = log_event(state, "stop", status=status, reason=reason)
         update = {"status": status, "pending": None, "trace": [event]}
         save_state(apply_update(state, update))
-        return Command(goto=END, update=update)
+        return Command(goto=END, update=merge_updates(memory, update))
 
     # A turn is one handoff decision; the stop check above makes no decision and is not counted.
     state = {**state, "turn_count": state["turn_count"] + 1}
@@ -200,7 +209,7 @@ def supervisor(state: State) -> Command[Literal["researcher", "writer", "reviewe
         "trace": [*update["trace"], event],
     }
     save_state(apply_update(state, update))
-    return Command(goto=worker, update=update)
+    return Command(goto=worker, update=merge_updates(memory, update))
 
 
 # --- Researcher -----------------------------------------------------------------
@@ -256,9 +265,12 @@ async def _research(state: State) -> dict[str, Any]:
             shortfall=len(snippets) < MIN_SNIPPETS,
         )
     )
+    found = [s.model_dump() for s in snippets]
+    log = AIMessage(format_evidence(found) or "found nothing", name="researcher")
     return {
         **update,
-        "snippets": [s.model_dump() for s in snippets],
+        "messages": [*update.get("messages", []), log],
+        "snippets": found,
         "mcp_calls": state["mcp_calls"] + searches,
         "trace": trace,
     }
@@ -308,11 +320,9 @@ def fix_length(
     event = log_event(
         state, "length_fix", before=words, after=body_word_count(fixed.body), kept=kept
     )
-    return fixed if kept else memo, {
-        **fix_update,
-        "messages": [*update["messages"], *fix_update["messages"]],
-        "trace": [*update["trace"], *fix_update["trace"], event],
-    }
+    return fixed if kept else memo, merge_updates(
+        merge_updates(update, fix_update), {"trace": [event]}
+    )
 
 
 def writer(state: State) -> Command[Literal["supervisor"]]:

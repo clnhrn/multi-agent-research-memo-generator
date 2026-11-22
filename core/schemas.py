@@ -205,3 +205,21 @@ def apply_update(state: State, update: dict[str, Any]) -> State:
         "messages": add_messages(state["messages"], update.get("messages", [])),
         "trace": operator.add(state["trace"], update.get("trace", [])),
     }
+
+
+def merge_updates(first: dict[str, Any], second: dict[str, Any]) -> dict[str, Any]:
+    """Combine two updates made in one node, in order.
+
+    Args:
+        first: The earlier update.
+        second: The later update; its plain fields win.
+
+    Returns:
+        One update holding the messages and trace of both.
+    """
+    return {
+        **first,
+        **second,
+        "messages": [*first.get("messages", []), *second.get("messages", [])],
+        "trace": [*first.get("trace", []), *second.get("trace", [])],
+    }
