@@ -8,11 +8,12 @@ that the Reviewer sends back, rather than an exception that ends the run.
 """
 
 import operator
-from typing import Annotated, Any, Literal, TypedDict
+from typing import Annotated, Any, Literal
 
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field, field_validator, model_validator
+from typing_extensions import TypedDict  # Pydantic needs this one before Python 3.12
 
 from core.config import MAX_SNIPPETS, MAX_SUBQUERIES
 from core.text import SOURCE_ID
@@ -114,6 +115,7 @@ class Verdict(BaseModel):
 
 
 Status = Literal["running", "completed", "escalated", "max_turns", "error"]
+Worker = Literal["researcher", "writer", "reviewer"]
 TERMINAL_STATUSES: frozenset[str] = frozenset({"completed", "escalated", "max_turns", "error"})
 
 
@@ -130,6 +132,7 @@ class State(TypedDict):
         status: Whether the run is in progress, or how it ended.
         run_id: ID used in log and scratchpad file names.
         topic_id: The topic's ID, e.g. T01.
+        pending: Worker handed off to but not finished; where a killed run resumes.
         rejections: Reviewer rejections so far.
         mcp_calls: MCP searches so far.
         total_tokens: Provider-reported tokens, or None once any call lacks usage.
@@ -148,6 +151,7 @@ class State(TypedDict):
     # Bookkeeping for metrics, memory and evidence
     run_id: str
     topic_id: str
+    pending: Worker | None
     rejections: int
     mcp_calls: int
     total_tokens: int | None  # provider-reported; None once any call lacks usage
@@ -176,9 +180,28 @@ def new_state(topic: str, topic_id: str, run_id: str | None = None) -> State:
         status="running",
         run_id=run_id or topic_id,
         topic_id=topic_id,
+        pending=None,
         rejections=0,
         mcp_calls=0,
         total_tokens=0,
         messages=[],
         trace=[],
     )
+
+
+def apply_update(state: State, update: dict[str, Any]) -> State:
+    """Apply a node's update with the same reducers the graph uses.
+
+    Args:
+        state: State before the node ran.
+        update: The node's update.
+
+    Returns:
+        The state the graph will hold after the node.
+    """
+    return {
+        **state,
+        **update,
+        "messages": add_messages(state["messages"], update.get("messages", [])),
+        "trace": operator.add(state["trace"], update.get("trace", [])),
+    }
