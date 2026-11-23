@@ -1,0 +1,153 @@
+{
+  "topic": "Assess SwiftCart delivery growth, reliability and costs.",
+  "snippets": [
+    {
+      "text": "SwiftCart's average cost per delivery rose from 5.00 credits in 2024 to 5.40 credits in 2025. Higher fuel and labour costs were cited in its fictional annual report.",
+      "source": "P06"
+    },
+    {
+      "text": "The fictional delivery company SwiftCart completed 1 million deliveries in 2025, up from 800,000 in 2024. Its on-time delivery rate rose from 90% to 92%.",
+      "source": "P05"
+    },
+    {
+      "text": "The same 2025 online grocery survey found that 360 of 600 online buyers valued delivery reliability most. The survey did not ask respondents to rank every purchasing factor.",
+      "source": "P08"
+    }
+  ],
+  "draft_memo": null,
+  "review_verdict": null,
+  "turn_count": 2,
+  "summary": "",
+  "status": "running",
+  "run_id": "live-resume-T03",
+  "topic_id": "T03",
+  "pending": "writer",
+  "rejections": 0,
+  "mcp_calls": 1,
+  "total_tokens": 473,
+  "messages": [
+    {
+      "content": "Topic: Assess SwiftCart delivery growth, reliability and costs.\nEvidence: none\nDraft: none\nLast verdict: no draft to review\nRejections: 0 of 3\nTurn: 1 of 8",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "human",
+      "name": "supervisor",
+      "id": "34545c69-63b1-4874-8aab-af8944f319be"
+    },
+    {
+      "content": "called hand_off_to_researcher",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "ai",
+      "name": "supervisor",
+      "id": "f55d5abf-d386-4902-bfb1-50240ddc9836",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null
+    },
+    {
+      "content": "Topic: Assess SwiftCart delivery growth, reliability and costs.\nEvidence: P06, P05, P08\nDraft: none\nLast verdict: no draft to review\nRejections: 0 of 3\nTurn: 2 of 8",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "human",
+      "name": "supervisor",
+      "id": "e9e7eda1-4153-4db1-9ccd-cebabafd87b8"
+    },
+    {
+      "content": "called hand_off_to_writer",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "ai",
+      "name": "supervisor",
+      "id": "5b162d92-6ad0-4125-92e0-686f28fdb48a",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null
+    }
+  ],
+  "trace": [
+    {
+      "ts": "2026-11-22T13:00:51+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 0,
+      "kind": "run_started",
+      "data": {
+        "topic": "Assess SwiftCart delivery growth, reliability and costs."
+      }
+    },
+    {
+      "ts": "2026-11-22T13:00:53+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 1,
+      "kind": "llm_call",
+      "data": {
+        "role": "supervisor",
+        "tokens": 234
+      }
+    },
+    {
+      "ts": "2026-11-22T13:00:53+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 1,
+      "kind": "supervisor_decision",
+      "data": {
+        "chosen": [
+          "hand_off_to_researcher"
+        ],
+        "handoff": "hand_off_to_researcher",
+        "redirected": null
+      }
+    },
+    {
+      "ts": "2026-11-22T13:00:53+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 1,
+      "kind": "mcp_search",
+      "data": {
+        "query": "Assess SwiftCart delivery growth, reliability and costs.",
+        "sources": [
+          "P06",
+          "P05",
+          "P08"
+        ]
+      }
+    },
+    {
+      "ts": "2026-11-22T13:00:53+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 1,
+      "kind": "research_done",
+      "data": {
+        "sources": [
+          "P06",
+          "P05",
+          "P08"
+        ],
+        "shortfall": false
+      }
+    },
+    {
+      "ts": "2026-11-22T13:00:55+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 2,
+      "kind": "llm_call",
+      "data": {
+        "role": "supervisor",
+        "tokens": 239
+      }
+    },
+    {
+      "ts": "2026-11-22T13:00:55+00:00",
+      "run_id": "live-resume-T03",
+      "turn": 2,
+      "kind": "supervisor_decision",
+      "data": {
+        "chosen": [
+          "hand_off_to_writer"
+        ],
+        "handoff": "hand_off_to_writer",
+        "redirected": null
+      }
+    }
+  ]
+}
