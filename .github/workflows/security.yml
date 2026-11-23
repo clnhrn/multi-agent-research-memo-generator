@@ -1,0 +1,61 @@
+# Security scans: secrets in history, Python SAST, dependency CVEs and workflow hardening.
+# Runs weekly as well, so new CVEs in unchanged dependencies are caught.
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # scan the full history
+          persist-credentials: false
+      # Free for personal accounts; repos owned by an organization need GITLEAKS_LICENSE.
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.10.2"
+      - name: Bandit (medium severity and above)
+        run: uvx bandit==1.9.4 -r . -x ./.venv,./tests -ll
+      - name: pip-audit (known CVEs in runtime dependencies)
+        run: |
+          uv export --frozen --no-dev --no-hashes --format requirements-txt -o "$RUNNER_TEMP/req.txt"
+          uvx pip-audit==2.10.1 -r "$RUNNER_TEMP/req.txt" --strict
+
+  workflows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.10.2"
+      - name: zizmor (workflow security)
+        run: uvx zizmor==1.33.1 --min-severity medium .github/workflows
