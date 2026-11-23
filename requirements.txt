@@ -86,7 +86,7 @@ langchain-protocol==0.0.21
     #   langgraph-sdk
 langgraph==1.2.20
     # via research-memo-team
-langgraph-checkpoint==4.3.1
+langgraph-checkpoint==4.3.2
     # via
     #   langgraph
     #   langgraph-prebuilt
