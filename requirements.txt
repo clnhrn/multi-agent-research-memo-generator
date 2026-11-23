@@ -112,7 +112,7 @@ packaging==26.3
     #   langsmith
 pycparser==3.12 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
     # via cffi
-pydantic==2.14.3
+pydantic==2.14.4
     # via
     #   langchain-core
     #   langgraph
