@@ -123,7 +123,7 @@ pydantic==2.14.3
     #   research-memo-team
 pydantic-core==2.50.4
     # via pydantic
-pydantic-settings==2.16.2
+pydantic-settings==2.16.3
     # via mcp
 pyjwt==2.15.1
     # via mcp
