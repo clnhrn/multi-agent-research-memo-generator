@@ -3,6 +3,7 @@
 A LangGraph `StateGraph` with four nodes. The supervisor decides who works next; three workers each do one bounded job and return a typed result. Every limit is defined once in code; this doc names the constant instead of repeating its value, so the two cannot drift apart.
 
 ```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 330}}}%%
 flowchart TD
     START(["start, or resume at the pending worker"]) --> SUP
 
