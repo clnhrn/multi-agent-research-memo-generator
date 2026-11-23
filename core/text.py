@@ -80,25 +80,66 @@ def has_figure(text: str) -> bool:
     return bool(_DIGIT.search(strip_citations(text)))
 
 
+# Phrases that name a gap or limitation in the evidence. Tested offline against the
+# Reviewer findings on the saved Phase 3-7 drafts.
 _MISSING_DATA = re.compile(
-    r"\b(?:data|figures|evidence|survey|surveys|report|corpus)\b[^.]*?"
-    r"\b(?:does not|do not|did not|doesn't|don't|lacks?|cannot|omits?|excludes?)\b"
-    r"|\bno (?:data|information|figures)\b"
-    r"|\b(?:absence of|without) (?:this|these|such|that|the)? ?(?:data|information|figures)\b",
+    "|".join(
+        [
+            r"\b(?:data|figures|evidence|survey|surveys|report|corpus)\b[^.]*?"
+            r"\b(?:does not|do not|did not|doesn't|don't|lacks?|cannot|omits?|excludes?)\b",
+            r"\bno (?:data|information|figures)\b",
+            r"\b(?:absence|lack|exclusion) of\b",
+            r"\bmissing\b",
+            r"\bwithout (?:this|these|such|that|the|additional)\b",
+            r"\b(?:is|are) not (?:provided|specified|available|reported|included|given)\b",
+            r"\b(?:does|do) not (?:provide|include|capture|cover|report|show|represent|account"
+            r"|specify)\b",
+            r"\b(?:data|information|research|studies|analysis)\b[^.]*?\b(?:is|are) (?:needed"
+            r"|required)\b",
+            r"\bwould (?:also )?(?:be (?:valuable|beneficial|needed|essential|useful|helpful)"
+            r"|provide|enhance|help)\b",
+            r"\b(?:limits?|limiting|hinders?) (?:the |a )?(?:ability|understanding|insights?"
+            r"|complete|evaluation)\b",
+            r"\b(?:challenging|difficult) to\b",
+            r"\bremains? (?:unclear|uncertain|unknown)\b",
+            r"\blimitations?\b",
+            r"\b(?:these|the) gaps\b",
+            r"\brequires further\b",
+        ]
+    ),
+    re.IGNORECASE,
+)
+
+# Words that add a cause, motive, prediction, recommendation or judgement. A sentence
+# with one of these is not a plain statement of missing data, even if it names a gap
+# ("insights are missing, which could influence future sales").
+_CLAIM_CUE = re.compile(
+    "|".join(
+        [
+            r"\b(?:should|must|will|likely|expected to|because|due to|driven by|attributed to)\b",
+            r"\b(?:suggests?|reflects|indicates?)\b",
+            r"\b(?:may|might|could) (?:reflect|indicate|suggest|lead|impact|influence|affect"
+            r"|drive|result|make)\b",
+            r"\b(?:promising|favorable|positive|traction|strategic)\b",
+        ]
+    ),
     re.IGNORECASE,
 )
 
 
 def states_missing_data(sentence: str) -> bool:
-    """Check whether a sentence says what the data does not cover.
+    """Check whether a sentence only says what the evidence does not cover.
+
+    A sentence that names a gap but also adds a cause, prediction, recommendation or
+    judgement is not a plain statement of missing data.
 
     Args:
         sentence: The sentence, e.g. "The data does not report generation."
 
     Returns:
-        True if the sentence describes missing data.
+        True if the sentence names missing data or a limitation and makes no claim.
     """
-    return bool(_MISSING_DATA.search(sentence))
+    return bool(_MISSING_DATA.search(sentence)) and not _CLAIM_CUE.search(sentence)
 
 
 def best_sentence(body: str, quote: str) -> tuple[str | None, float]:
