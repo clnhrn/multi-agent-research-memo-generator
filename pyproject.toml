@@ -1,6 +1,7 @@
 [project]
 name = "research-memo-team"
 version = "0.1.0"
+description = "Supervisor-led multi-agent research memo generator with MCP retrieval, compared against a single-agent baseline"
 requires-python = ">=3.11"
 dependencies = [
     "langchain-core>=1.7.6,<2",
