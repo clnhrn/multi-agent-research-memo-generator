@@ -1,0 +1,342 @@
+{
+  "note": "Manually reviewed copy of evaluation.raw.json. Same rubric and missing-data rule for both systems.",
+  "settings": {
+    "model": "gpt-4o-mini",
+    "temperature": 0,
+    "started_at": "2026-11-23T03:09:27+00:00"
+  },
+  "baseline": [
+    {
+      "topic_id": "T01",
+      "memo": "Rooftop Solar Installation Trends in Northstar\n\nIn 2025, the Northstar region experienced a notable increase in rooftop solar installations, with total capacity rising to 120 megawatts, up from 100 megawatts in 2024. This growth reflects a broader trend in both residential and commercial sectors, where residential installations increased from 40 to 55 megawatts, while commercial installations saw a smaller rise from 60 to 65 megawatts during the same period [P01][P02]. The overall increase in capacity indicates a growing adoption of solar technology in Northstar, although the figures represent new capacity rather than actual electricity generated.\n\nSupporting figures reveal that the market for home battery units is also expanding, with Solara selling 4,000 units in 2025, an increase from 3,000 in 2024 [P03]. Additionally, the average installed price of these batteries decreased from 8,000 credits in 2024 to 7,600 credits in 2025, potentially making them more accessible to consumers [P04]. However, it is important to note that Solara's sales figures do not encompass the entire market, which limits the ability to fully assess the overall growth in home battery adoption alongside solar installations.\n\nThe data does have limitations, particularly regarding the representativeness of the figures. For instance, the reported increases in installations and sales are based on specific companies and do not account for all market participants. Furthermore, the figures for rooftop solar installations and home battery sales are not directly comparable year-over-year due to different respondents and market conditions each year. This variability can affect the interpretation of trends and growth rates.\n\nTo gain a comprehensive understanding of rooftop solar trends in Northstar, additional data would be beneficial. Specifically, information on the total number of installations across all companies, as well as data on consumer demographics and motivations for adopting solar technology, would provide deeper insights. Furthermore, understanding the impact of external factors, such as government incentives or economic conditions, could enhance the analysis of these trends.\n\nFootnotes:\n[P01] In 2025, Northstar installed 120 megawatts of rooftop solar, up from 100 megawatts in 2024.  \n[P02] Northstar's residential rooftop solar installations increased from 40 to 55 megawatts between 2024 and 2025.  \n[P03] Solara sold 4,000 home battery units in Northstar in 2025, compared with 3,000 in 2024.  \n[P04] Solara reduced the average installed price of its home battery from 8,000 credits in 2024 to 7,600 credits in 2025.",
+      "total_tokens": 1433,
+      "turns": 1,
+      "rejections": 0,
+      "mcp_calls": 0,
+      "status": "completed",
+      "checks": {
+        "word_count": 312,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 396,
+        "whole_memo_length_pass": false,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:09:27+00:00",
+      "seconds": 12.1,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 1: uncited figures in the first sentence ('120 megawatts, up from 100 megawatts in 2024').",
+          "Item 3: 'This growth reflects a broader trend' is an unsupported cause; 'potentially making them more accessible [P04]' is not in P04.",
+          "Item 3: invents a limitation: solar figures 'not directly comparable year-over-year due to different respondents' (that is P10's survey)."
+        ]
+      }
+    },
+    {
+      "topic_id": "T02",
+      "memo": "Memo: Assessment of Solara Home Battery Sales and Pricing Trends\n\nIn 2025, Solara achieved a notable increase in home battery sales, selling 4,000 units compared to 3,000 in 2024, reflecting a growth trend in consumer adoption of home battery technology [P03]. This increase in sales aligns with the broader context of rising residential rooftop solar installations in the Northstar region, which grew from 40 megawatts in 2024 to 55 megawatts in 2025 [P02]. The correlation between solar installations and battery sales suggests a growing market for integrated renewable energy solutions, although Solara's sales figures do not encompass the entire market, limiting the understanding of overall industry performance.\n\nThe average installed price of Solara's home battery decreased from 8,000 credits in 2024 to 7,600 credits in 2025, indicating a trend towards more affordable energy storage solutions [P04]. This price reduction may enhance accessibility for consumers, potentially driving further sales growth. However, it is important to note that these prices exclude maintenance costs, which could affect the total cost of ownership for consumers. The pricing trend must be interpreted with caution, as it does not account for variations in installation practices or regional pricing differences that could influence consumer decisions.\n\nThe data available presents certain limitations, particularly regarding the representation of the entire market. Solara's sales figures are specific to the company and do not reflect the performance of competitors or the overall market dynamics for home batteries [P03]. Additionally, the sales data does not provide insights into customer demographics or preferences, which are crucial for understanding market trends. The absence of comprehensive market data makes it challenging to draw definitive conclusions about the factors driving sales growth.\n\nTo fully assess the home battery market, additional data is needed, including competitor sales figures, consumer demographics, and regional pricing variations. Understanding these elements would provide a more complete picture of the market landscape and enable a more thorough analysis of trends influencing Solara's performance and the broader home battery sector.\n\nFootnotes:\n[P01] Northstar region solar installation data for 2024 and 2025.  \n[P02] Residential and commercial solar installation figures for Northstar in 2024 and 2025.  \n[P03] Solara home battery sales figures for 2024 and 2025.  \n[P04] Average installed price of Solara home batteries for 2024 and 2025.  ",
+      "total_tokens": 1380,
+      "turns": 1,
+      "rejections": 0,
+      "mcp_calls": 0,
+      "status": "completed",
+      "checks": {
+        "word_count": 317,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 377,
+        "whole_memo_length_pass": false,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [
+          "Footnotes for IDs not cited in the body: P01."
+        ],
+        "automatic_checks_pass": false,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:09:39+00:00",
+      "seconds": 11.5,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 4: footnote for uncited P01 (automatic check).",
+          "Item 3: 'This price reduction may enhance accessibility for consumers, potentially driving further sales growth.' is an uncited prediction.",
+          "Item 3: 'The correlation ... suggests a growing market for integrated renewable energy solutions' is an unsupported inference."
+        ]
+      }
+    },
+    {
+      "topic_id": "T03",
+      "memo": "Memo: Assessment of SwiftCart Delivery Growth, Reliability, and Costs\n\nIn 2025, SwiftCart demonstrated significant growth in its delivery operations, completing 1 million deliveries, an increase from 800,000 in 2024. This growth reflects a broader trend in the online grocery market, where consumer engagement rose, as evidenced by a survey indicating that 600 out of 1,000 respondents purchased groceries online in 2025, compared to 520 in 2024 [P05][P07]. Additionally, SwiftCart's on-time delivery rate improved from 90% to 92%, suggesting enhanced reliability in its service offerings [P05].\n\nSupporting figures indicate that while SwiftCart's delivery volume increased, the average cost per delivery also rose from 5.00 credits in 2024 to 5.40 credits in 2025. This increase has been attributed to higher fuel and labor costs, as noted in its annual report [P06]. The rising costs may impact profitability, particularly as the company scales its operations to meet growing demand. The increase in delivery costs, juxtaposed with the growth in delivery volume, presents a complex picture of operational efficiency.\n\nHowever, the data has limitations that must be acknowledged. The figures for delivery growth and reliability are based on SwiftCart's internal metrics, which may not account for external factors affecting the broader market. Furthermore, the online grocery survey only captures a snapshot of consumer behavior, with 600 respondents indicating a preference for delivery reliability without ranking other factors [P08]. This limitation means that while reliability is valued, it is unclear how it compares to other purchasing considerations.\n\nTo fully assess SwiftCart's performance, additional data would be beneficial. Information on customer satisfaction, competitive pricing, and market share relative to other delivery services would provide a more comprehensive understanding of SwiftCart's position in the market. Furthermore, insights into customer demographics and preferences could help contextualize the growth figures and delivery reliability metrics, allowing for a more nuanced analysis of the company's operational success.\n\nFootnotes:\n[P05] SwiftCart delivery statistics for 2025.  \n[P06] SwiftCart annual report detailing cost increases.  \n[P07] Northstar online grocery survey results for 2025.  \n[P08] Insights from the online grocery survey regarding delivery reliability.",
+      "total_tokens": 1347,
+      "turns": 1,
+      "rejections": 0,
+      "mcp_calls": 0,
+      "status": "completed",
+      "checks": {
+        "word_count": 297,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 343,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:09:51+00:00",
+      "seconds": 9.8,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 1: uncited figures in the first sentence ('1 million deliveries, an increase from 800,000').",
+          "Item 3: 'The rising costs may impact profitability ... to meet growing demand.' is an uncited prediction.",
+          "Factual error: '600 respondents indicating a preference for delivery reliability [P08]'; P08 says 360 of 600."
+        ]
+      }
+    },
+    {
+      "topic_id": "T04",
+      "memo": "**Memo: Assessment of Online Grocery Adoption and Delivery Reliability in Northstar**\n\nIn Northstar, online grocery adoption has shown a significant increase from 2024 to 2025. According to a survey, 600 out of 1,000 respondents reported purchasing groceries online in 2025, compared to 520 in 2024. This represents a growth rate of approximately 15.4% in online grocery shoppers within a year, indicating a notable shift in consumer behavior towards digital grocery shopping [P07]. The increase in adoption may reflect broader trends in e-commerce and changing consumer preferences.\n\nSupporting figures reveal that delivery reliability is a critical factor for online grocery shoppers. In the same survey, 360 of the 600 online buyers indicated that delivery reliability was their most valued aspect of the service [P08]. This highlights the importance of timely deliveries in influencing consumer choices. However, the survey did not ask respondents to rank all purchasing factors, which limits the understanding of how delivery reliability compares to other potential influences on consumer behavior.\n\nThe data presents certain limitations that must be acknowledged. The survey's sample size of 1,000 respondents may not fully represent the entire population of Northstar, and the figures reflect respondents rather than transaction volumes. Additionally, the survey utilized different respondents each year, making year-over-year comparisons challenging [P07][P10]. This variability can affect the reliability of trends observed in the data, as changes in consumer sentiment may not be accurately captured.\n\nTo gain a comprehensive understanding of online grocery adoption and delivery reliability, additional data is needed. Specifically, transaction volume data would provide insights into the actual purchasing behavior of consumers, rather than just their reported intentions. Furthermore, information on customer satisfaction levels regarding delivery reliability and other service aspects would enhance the analysis of consumer preferences in Northstar's online grocery market.\n\n**Footnotes:**\n[P01] In 2025, Northstar installed 120 megawatts of rooftop solar.  \n[P02] Northstar's residential rooftop solar installations increased from 40 to 55 megawatts.  \n[P03] Solara sold 4,000 home battery units in Northstar in 2025.  \n[P04] Solara reduced the average installed price of its home battery from 8,000 credits to 7,600 credits.  \n[P05] SwiftCart completed 1 million deliveries in 2025, with an on-time delivery rate of 92%.  \n[P06] SwiftCart's average cost per delivery rose from 5.00 credits to 5.40 credits.  \n[P07] In 2025, 600 of 1,000 respondents bought groceries online in Northstar.  \n[P08] 360 of 600 online buyers valued delivery reliability most in 2025.  \n[P09] CareBridge conducted 24,000 remote consultations in 2025.  \n[P10] CareBridge's patient survey recorded 80% satisfaction for remote consultations in 2025.  \n[P11] Northstar's public transport operator added 50 electric buses in 2025.  \n[P12] Average electricity costs for electric buses were 0.80 credits per kilometre in 2025.",
+      "total_tokens": 1529,
+      "turns": 1,
+      "rejections": 0,
+      "mcp_calls": 0,
+      "status": "completed",
+      "checks": {
+        "word_count": 281,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 452,
+        "whole_memo_length_pass": false,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [
+          "Footnotes for IDs not cited in the body: P01, P02, P03, P04, P05, P06, P09, P11, P12."
+        ],
+        "automatic_checks_pass": false,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:10:00+00:00",
+      "seconds": 12.8,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 4: footnotes for 9 uncited IDs (automatic check).",
+          "Item 3: 'The increase in adoption may reflect broader trends in e-commerce' is an uncited cause.",
+          "Misattribution: 'different respondents each year [P07][P10]'; that limitation belongs to CareBridge's survey (P10), not the grocery survey."
+        ]
+      }
+    },
+    {
+      "topic_id": "T05",
+      "memo": "Assessing CareBridge Remote Consultations and Patient Satisfaction\n\nIn 2025, CareBridge conducted 24,000 remote consultations, an increase from 20,000 in 2024, indicating a growing reliance on telehealth services within the organization [P09]. This rise in consultations represented 30% of CareBridge's total consultations for the year, reflecting a significant shift towards remote healthcare delivery. The increase in remote consultations aligns with broader trends in healthcare, where telehealth has become an essential service for many patients, particularly in the wake of recent global health challenges.\n\nPatient satisfaction for CareBridge's remote consultations was reported at 80% in 2025, a slight increase from 78% in 2024 [P10]. This improvement in satisfaction levels suggests that patients are increasingly content with the quality of care received through remote consultations. However, it is important to note that the surveys utilized different respondents each year, which may affect the comparability of satisfaction ratings. This limitation means that while there is an upward trend in satisfaction, the data does not definitively indicate whether the same patients experienced improved satisfaction over time.\n\nThe data available does not provide insights into the specific factors contributing to patient satisfaction or dissatisfaction with remote consultations. The survey did not ask respondents to rank various aspects of their experience, leaving a gap in understanding what elements of the service are most valued by patients [P10]. Additionally, the lack of demographic information about the respondents limits the ability to analyze satisfaction across different patient groups, which could reveal disparities in experiences.\n\nTo fully assess the effectiveness of CareBridge's remote consultations, further data is needed. Information on patient demographics, reasons for consultation, and specific feedback on the remote consultation experience would provide a more comprehensive understanding of patient satisfaction. Additionally, longitudinal studies tracking the same patients over time could yield insights into how satisfaction evolves with continued use of remote healthcare services.\n\nFootnotes:\n[P09] CareBridge's remote consultations data for 2025.  \n[P10] Patient satisfaction survey results for CareBridge's remote consultations.",
+      "total_tokens": 1294,
+      "turns": 1,
+      "rejections": 0,
+      "mcp_calls": 0,
+      "status": "completed",
+      "checks": {
+        "word_count": 297,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 324,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:10:13+00:00",
+      "seconds": 11.4,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 1: '... represented 30% of CareBridge's total consultations' has no citation.",
+          "Item 3: 'particularly in the wake of recent global health challenges' is an outside claim.",
+          "Misattribution: 'The survey did not ask respondents to rank various aspects [P10]'; that is P08's grocery survey."
+        ]
+      }
+    }
+  ],
+  "multi_agent": [
+    {
+      "topic_id": "T01",
+      "memo": "Rooftop Solar Installation Trends in Northstar\n\nThe rooftop solar installation trends in Northstar show a notable increase in capacity from 2024 to 2025. In 2025, Northstar installed 120 megawatts of rooftop solar, up from 100 megawatts in 2024, indicating a growing interest in solar energy solutions [P01]. This increase is reflected in both residential and commercial sectors, with residential installations rising from 40 to 55 megawatts and commercial installations increasing from 60 to 65 megawatts during the same period [P02].\n\nThe figures demonstrate a clear upward trend in rooftop solar capacity, with a total increase of 20 megawatts across all installations in Northstar. Specifically, residential installations accounted for a 15-megawatt increase, while commercial installations contributed an additional 5 megawatts [P02]. This growth is notable, as it highlights the increasing capacity in both sectors, although the reasons behind this trend are not specified in the data.\n\nHowever, the data has limitations that should be considered. The figures represent new capacity installed rather than the total electricity generated from these installations, which means they do not provide insight into the overall effectiveness or efficiency of the solar systems in place [P01]. Additionally, the data does not specify the number of installations or the types of systems used, which could affect the interpretation of the growth in capacity.\n\nFurthermore, there is missing data that would help in assessing the broader context of these trends. Information on the total number of residential and commercial properties in Northstar, as well as the percentage of those that have adopted solar installations, would provide a clearer picture of market penetration and growth potential. Without this data, it is challenging to fully evaluate the significance of the reported increases in rooftop solar capacity.\n\nFootnotes:\n[P01] Northstar rooftop solar capacity data\n[P02] Northstar residential and commercial solar installations",
+      "total_tokens": 5988,
+      "turns": 5,
+      "rejections": 1,
+      "mcp_calls": 3,
+      "status": "completed",
+      "checks": {
+        "word_count": 275,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 299,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:10:25+00:00",
+      "seconds": 31.0,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 1: 'with a total increase of 20 megawatts across all installations in Northstar' has no citation. The Reviewer model did not flag it.",
+          "Otherwise figures and limitations match P01-P02; 'indicating a growing interest [P01]' is an interpretation P01 does not state (minor)."
+        ]
+      }
+    },
+    {
+      "topic_id": "T02",
+      "memo": "Assessment of Solara Home Battery Sales and Pricing Trends\n\nSolara's home battery sales in Northstar increased from 3,000 units in 2024 to 4,000 units in 2025, indicating a growth trend in their sales figures [P03]. However, it is important to note that these sales numbers do not represent the entire market, which limits the ability to assess overall market performance based solely on Solara's data. The average installed price of Solara's home battery also saw a decrease, dropping from 8,000 credits in 2024 to 7,600 credits in 2025 [P04]. This price reduction does not include maintenance fees, which could affect the total cost of ownership for consumers. The data does not report sales figures for other regions or competitors. The data does not report customer demographics or preferences regarding home battery purchases.  \n\nThe increase in sales and decrease in price are notable trends for Solara, but the data has limitations. The sales figures are specific to Northstar and do not account for variations in other regions or the overall market dynamics. Additionally, the exclusion of maintenance costs from the pricing data means that the figures may not fully represent the financial implications for consumers considering a home battery purchase.  \n\nTo fully understand the implications of these trends, additional data would be beneficial. Information on the total market size for home batteries, competitor pricing, and consumer preferences would provide a more comprehensive view of Solara's position in the market. Furthermore, data on customer satisfaction and performance metrics of the home batteries would help assess the long-term viability of Solara's products in a competitive landscape.\n\nFootnotes:\n[P03] Solara home battery sales figures\n[P04] Solara home battery pricing data",
+      "total_tokens": 7513,
+      "turns": 5,
+      "rejections": 1,
+      "mcp_calls": 3,
+      "status": "completed",
+      "checks": {
+        "word_count": 256,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 280,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:10:56+00:00",
+      "seconds": 37.6,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 3 (strict rule): 'which could affect the total cost of ownership for consumers' is an uncited consequence not in P04.",
+          "Figures, the market-coverage limitation (P03) and the maintenance exclusion (P04) are correct."
+        ]
+      }
+    },
+    {
+      "topic_id": "T03",
+      "memo": "Assessment of SwiftCart Delivery Growth, Reliability, and Costs\n\nSwiftCart completed 1 million deliveries in 2025, an increase from 800,000 in 2024 [P05]. This growth is accompanied by an improvement in its on-time delivery rate, which rose from 90% to 92% during the same period [P05]. These figures indicate a positive trend in both the volume of deliveries and the reliability of service. The data does not report the average delivery time for SwiftCart deliveries. The data does not report the number of customers served in 2025.\n\nHowever, the average cost per delivery rose from 5.00 credits in 2024 to 5.40 credits in 2025 [P06]. Higher fuel and labor costs were cited as contributing factors in SwiftCart's annual report [P06]. This increase in costs presents a challenge for the company. The data does not report the total revenue generated from these deliveries.\n\nThe data does have limitations, particularly regarding the survey on delivery reliability. While 360 out of 600 online buyers indicated that delivery reliability was their top priority, the survey did not ask respondents to rank every purchasing factor [P08]. This lack of comprehensive ranking means that the importance of delivery reliability relative to other factors remains unclear. The data does not report the demographics of the survey respondents.\n\nAdditionally, there is missing data that could provide a more complete picture of SwiftCart's performance. Information on customer satisfaction ratings, reasons for delivery delays, and comparative costs with competitors would be valuable for a thorough assessment. Without this data, it is challenging to fully evaluate SwiftCart's position in the market and the implications of its growth and cost increases.\n\nFootnotes:\n[P05] SwiftCart delivery statistics\n[P06] SwiftCart annual report on costs\n[P08] Online grocery survey results",
+      "total_tokens": 21096,
+      "turns": 7,
+      "rejections": 3,
+      "mcp_calls": 1,
+      "status": "escalated",
+      "checks": {
+        "word_count": 258,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 287,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:11:33+00:00",
+      "seconds": 46.3,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Escalated after 3 rejections; judged on its final memo.",
+          "Item 3 (strict rule): 'This increase in costs presents a challenge for the company.' is an uncited judgement. The Reviewer also rejected it.",
+          "Figures correct; cost causes attributed to P06; P08 limitation stated correctly."
+        ]
+      }
+    },
+    {
+      "topic_id": "T04",
+      "memo": "Online Grocery Adoption and Delivery Reliability in Northstar\n\nThe adoption of online grocery shopping in Northstar has shown a notable increase from 2024 to 2025. In 2025, 600 out of 1,000 respondents reported purchasing groceries online, compared to 520 out of 1,000 in 2024, indicating a growth in online grocery shoppers [P07]. Furthermore, delivery reliability emerged as a significant concern among these shoppers. The 2025 online grocery survey revealed that 360 of the 600 online buyers valued delivery reliability most, highlighting its importance in the purchasing decision [P08]. The data does not report the specific reasons why respondents chose to shop online. \n\nWhile the survey provides valuable insights into consumer preferences, it has limitations that should be noted. The survey did not ask respondents to rank every purchasing factor, which means that the relative importance of delivery reliability compared to other factors remains unclear [P08]. Additionally, the data reflects respondents' preferences rather than actual transaction volumes, which could lead to discrepancies in understanding the overall market dynamics [P07]. The data does not report the demographics of the respondents, which could provide additional context. \n\nThe findings do not provide a comprehensive view of the factors influencing consumer behavior. The lack of detailed ranking data limits the ability to assess how delivery reliability compares to other factors such as price or product selection. This limitation is crucial for understanding the full landscape of online grocery shopping in Northstar. \n\nMoreover, the survey does not include data on the frequency of online grocery purchases or customer satisfaction levels, which are essential for evaluating the overall reliability of delivery services. Without this information, it is challenging to draw definitive conclusions about the effectiveness of online grocery delivery in meeting consumer expectations.\n\nFootnotes:\n[P07] Northstar online grocery survey results\n[P08] 2025 online grocery survey on delivery reliability",
+      "total_tokens": 7934,
+      "turns": 5,
+      "rejections": 1,
+      "mcp_calls": 3,
+      "status": "completed",
+      "checks": {
+        "word_count": 276,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 303,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": true
+      },
+      "started_at": "2026-11-23T03:12:20+00:00",
+      "seconds": 29.1,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "All figures cited and correct (P07, P08); both stated limitations reported; remaining sentences name missing data.",
+          "No cause, prediction, recommendation or outside claim; footnotes match citations."
+        ]
+      }
+    },
+    {
+      "topic_id": "T05",
+      "memo": "Assessment of CareBridge Remote Consultations and Patient Satisfaction\n\nCareBridge's remote consultations have shown a notable increase in patient satisfaction, with an 80% satisfaction rate reported in 2025, compared to 78% in 2024 [P10]. The number of remote consultations also rose significantly, with CareBridge conducting 24,000 consultations in 2025, up from 20,000 in 2024 [P09]. This growth indicates a shift towards more patients utilizing remote consultation options, which constituted 30% of total consultations in 2025 [P09].\n\nWhile the reported satisfaction rates are promising, it is important to note that the surveys utilized different respondents each year, which limits the ability to make direct comparisons over time [P10]. This methodological difference means that the increase in satisfaction may not reflect a consistent improvement among the same patient cohort. Additionally, the data does not provide insights into the specific factors contributing to patient satisfaction or dissatisfaction, which could inform future improvements in service delivery.\n\nThe evidence does not include demographic information about the patients surveyed or details on the nature of the consultations, which could be critical for understanding the context of the satisfaction ratings. Without this data, it is challenging to assess whether certain patient groups are more satisfied than others or if specific types of consultations yield higher satisfaction rates. Furthermore, the absence of longitudinal data limits the ability to track changes in patient satisfaction over time.\n\nIn summary, while CareBridge's remote consultations show an upward trend in patient satisfaction and an increase in the number of consultations, the limitations in the survey methodology and missing demographic data hinder a comprehensive evaluation of these findings. Addressing these gaps would provide a clearer picture of patient experiences with remote consultations.\n\nFootnotes:\n[P10] CareBridge patient survey results\n[P09] CareBridge remote consultation statistics",
+      "total_tokens": 6031,
+      "turns": 5,
+      "rejections": 1,
+      "mcp_calls": 3,
+      "status": "completed",
+      "checks": {
+        "word_count": 268,
+        "counted": "body",
+        "length_pass": true,
+        "whole_memo_word_count": 291,
+        "whole_memo_length_pass": true,
+        "citation_present": true,
+        "invalid_citations": [],
+        "problems": [],
+        "automatic_checks_pass": true,
+        "rubric_pass": false
+      },
+      "started_at": "2026-11-23T03:12:49+00:00",
+      "seconds": 25.1,
+      "review": {
+        "reviewer": "manual",
+        "date": "2026-11-23",
+        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "notes": [
+          "Item 3 (strict rule): 'which could inform future improvements in service delivery' is an uncited consequence (recommendation-like).",
+          "Figures correct (P09, P10); different-respondents limitation stated correctly."
+        ]
+      }
+    }
+  ]
+}
