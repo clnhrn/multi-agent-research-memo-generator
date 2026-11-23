@@ -1,4 +1,8 @@
-# Weekly update PRs for the SHA-pinned GitHub Actions and the uv lockfile.
+# Weekly update PRs for the SHA-pinned GitHub Actions.
+# Python dependencies are not updated here: Dependabot edits requirements.txt and uv.lock
+# separately, which breaks the drift check in ci.yml. Upgrade them with
+# `uv lock --upgrade` and regenerate requirements.txt with `uv export`,
+# and rely on the weekly pip-audit job in security.yml for known vulnerabilities.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -8,8 +12,3 @@ updates:
     groups:
       actions:
         patterns: ["*"]
-  - package-ecosystem: uv
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
