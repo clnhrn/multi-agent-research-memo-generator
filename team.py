@@ -378,7 +378,8 @@ def verify(body: str, violations: list[Violation]) -> tuple[list[Violation], lis
     """Keep only the violations the memo text supports.
 
     The model proposes, code verifies: a quote must exist in the memo, an attributed
-    (cited) sentence cannot be an unsupported claim, and an uncited figure needs a figure.
+    (cited) sentence or a plain statement of missing data cannot be an unsupported
+    claim, and an uncited figure needs a figure.
 
     Args:
         body: The memo body.
@@ -394,7 +395,7 @@ def verify(body: str, violations: list[Violation]) -> tuple[list[Violation], lis
             why = "quote not found in memo"
         elif v.kind in _NEEDS_ATTRIBUTION and has_citation(sentence):
             why = "sentence is attributed to a cited source"
-        elif v.kind == "outside_claim" and states_missing_data(sentence):
+        elif v.kind in _NEEDS_ATTRIBUTION and states_missing_data(sentence):
             why = "sentence states missing data, which the rubric allows"
         elif v.kind == "uncited_figure" and (has_citation(sentence) or not has_figure(sentence)):
             why = "sentence has a citation or no figure"
