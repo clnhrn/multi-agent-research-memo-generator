@@ -1,5 +1,5 @@
 {
-  "note": "Manually reviewed copy of evaluation.raw.json. Same rubric and missing-data rule for both systems.",
+  "note": "Manually reviewed copy of evaluation.raw.json. Same rubric and missing-data rule for both systems. Item-by-item reasons for each verdict: results/MANUAL_REVIEW.md.",
   "settings": {
     "model": "gpt-4o-mini",
     "temperature": 0,
@@ -31,7 +31,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Item 1: uncited figures in the first sentence ('120 megawatts, up from 100 megawatts in 2024').",
           "Item 3: 'This growth reflects a broader trend' is an unsupported cause; 'potentially making them more accessible [P04]' is not in P04.",
@@ -66,7 +66,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Item 4: footnote for uncited P01 (automatic check).",
           "Item 3: 'This price reduction may enhance accessibility for consumers, potentially driving further sales growth.' is an uncited prediction.",
@@ -99,7 +99,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Item 1: uncited figures in the first sentence ('1 million deliveries, an increase from 800,000').",
           "Item 3: 'The rising costs may impact profitability ... to meet growing demand.' is an uncited prediction.",
@@ -134,7 +134,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Item 4: footnotes for 9 uncited IDs (automatic check).",
           "Item 3: 'The increase in adoption may reflect broader trends in e-commerce' is an uncited cause.",
@@ -167,7 +167,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Item 1: '... represented 30% of CareBridge's total consultations' has no citation.",
           "Item 3: 'particularly in the wake of recent global health challenges' is an outside claim.",
@@ -202,7 +202,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Item 1: 'with a total increase of 20 megawatts across all installations in Northstar' has no citation. The Reviewer model did not flag it.",
           "Otherwise figures and limitations match P01-P02; 'indicating a growing interest [P01]' is an interpretation P01 does not state (minor)."
@@ -227,17 +227,17 @@
         "invalid_citations": [],
         "problems": [],
         "automatic_checks_pass": true,
-        "rubric_pass": false
+        "rubric_pass": true
       },
       "started_at": "2026-11-23T03:10:56+00:00",
       "seconds": 37.6,
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
-          "Item 3 (strict rule): 'which could affect the total cost of ownership for consumers' is an uncited consequence not in P04.",
-          "Figures, the market-coverage limitation (P03) and the maintenance exclusion (P04) are correct."
+          "Pass. Figures cited and correct (P03, P04); market-coverage limitation (P03) and maintenance exclusion (P04) stated.",
+          "'which could affect the total cost of ownership for consumers' only spells out P04's limitation (prices exclude maintenance), so it is allowed under the claim-based rule."
         ]
       }
     },
@@ -266,10 +266,10 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "Escalated after 3 rejections; judged on its final memo.",
-          "Item 3 (strict rule): 'This increase in costs presents a challenge for the company.' is an uncited judgement. The Reviewer also rejected it.",
+          "Item 3: 'This increase in costs presents a challenge for the company.' is an uncited, unhedged consequence for the business (an implied prediction) that P06 does not state. The Reviewer also classed it as a prediction and rejected it.",
           "Figures correct; cost causes attributed to P06; P08 limitation stated correctly."
         ]
       }
@@ -299,7 +299,7 @@
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
           "All figures cited and correct (P07, P08); both stated limitations reported; remaining sentences name missing data.",
           "No cause, prediction, recommendation or outside claim; footnotes match citations."
@@ -324,17 +324,17 @@
         "invalid_citations": [],
         "problems": [],
         "automatic_checks_pass": true,
-        "rubric_pass": false
+        "rubric_pass": true
       },
       "started_at": "2026-11-23T03:12:49+00:00",
       "seconds": 25.1,
       "review": {
         "reviewer": "manual",
         "date": "2026-11-23",
-        "rule": "strict: an uncited could/may consequence or judgement not stated in the source is an unsupported claim; plain statements of missing data are allowed",
+        "rule": "claim-based: a sentence fails item 3 if it adds an uncited cause, prediction (including a consequence for a business or its customers), recommendation or outside claim, whether or not it is hedged with could/may; a sentence that only spells out what a stated limitation or missing data means is allowed",
         "notes": [
-          "Item 3 (strict rule): 'which could inform future improvements in service delivery' is an uncited consequence (recommendation-like).",
-          "Figures correct (P09, P10); different-respondents limitation stated correctly."
+          "Pass. Figures cited and correct (P09, P10); different-respondents limitation stated correctly.",
+          "'which could inform future improvements in service delivery' says why the missing data matters and tells no one to act, so it is allowed under the claim-based rule."
         ]
       }
     }
