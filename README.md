@@ -1,5 +1,7 @@
 # Multi-Agent Research Memo Generator
 
+[![ci](https://github.com/clnhrn/multi-agent-research-memo-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/clnhrn/multi-agent-research-memo-generator/actions/workflows/ci.yml)
+
 A supervisor-led team (Researcher, Writer, Reviewer) writes cited 250–350-word research memos from a fictional market corpus, and is evaluated against a single-agent baseline on five fixed topics. The supervisor only routes, using typed handoff tools; the Researcher reaches the corpus only through an MCP server; state persists to a typed scratchpad after every turn and can resume after a kill; a rolling summary compacts the message log above 8,000 tokens. Design details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Setup
