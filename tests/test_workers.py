@@ -134,7 +134,9 @@ BODY = (
     "Residential capacity reached 55 megawatts. "
     "This growth reflects rising demand for clean energy. "
     "Higher fuel costs were cited by the operator [P06]. "
-    "The data does not report generation."
+    "The data does not report generation. "
+    "Without this data, it is challenging to assess demand. "
+    "Insights are missing, which could influence future sales."
 )
 
 
@@ -172,6 +174,12 @@ def test_reviewer_automatic_failures_force_revise(fake_call):
         ("uncited_figure", "The data does not report generation.", False),  # no figure
         ("prediction", "Solar will keep growing next year.", False),  # not in memo
         ("outside_claim", "The data does not report generation.", False),  # missing data
+        # Missing data is allowed whatever kind the model gives it.
+        ("prediction", "Without this data, it is challenging to assess demand.", False),
+        ("recommendation", "Without this data, it is challenging to assess demand.", False),
+        ("cause_or_motive", "Without this data, it is challenging to assess demand.", False),
+        # A gap plus a claim in the same sentence still counts.
+        ("prediction", "Insights are missing, which could influence future sales.", True),
         ("outside_claim", "Higher fuel costs were cited by the operator.", False),  # cited
     ],
 )
