@@ -10,8 +10,8 @@ __pycache__/
 .ruff_cache/
 
 # Run artefacts from development (curated evidence is copied out in Phase 8)
-logs/
-scratchpad/
+/logs/
+/scratchpad/
 
 # Private notes
 extra/
