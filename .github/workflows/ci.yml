@@ -1,0 +1,46 @@
+# Lint, format, docstrings, offline tests and dependency-file drift on every PR and push to main.
+# The tests make no model calls, so the workflow needs no secrets.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.10.2"
+          enable-cache: true
+
+      - name: Install from the lockfile (fails if uv.lock is out of date)
+        run: uv sync --locked
+
+      - name: Lint, including Google-style docstrings
+        run: uv run ruff check .
+
+      - name: Format
+        run: uv run ruff format --check .
+
+      - name: Tests (offline, no API key)
+        run: uv run pytest -q
+
+      - name: requirements.txt matches uv.lock
+        run: |
+          uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -q -o "$RUNNER_TEMP/requirements.txt"
+          diff <(grep -v '^#' requirements.txt) <(grep -v '^#' "$RUNNER_TEMP/requirements.txt")
